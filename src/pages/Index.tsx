@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback } from "react";
 import { fetchTopAnime, fetchAnimeDetails } from "@/lib/api";
 import AnimeCard from "@/components/AnimeCard";
@@ -5,18 +6,12 @@ import AnimeDetailModal from "@/components/AnimeDetailModal";
 import AnimeSearchBar from "@/components/AnimeSearchBar";
 import { toast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loader2, ImagePlus } from "lucide-react";
+import { Home, Star, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import WaifuGifModal from "@/components/WaifuGifModal";
 import { useWaifuApiToken } from "@/hooks/useWaifuApiToken";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@/components/ui/tabs";
 import AppSidebar from "@/components/AppSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import NekosApiGallery from "@/components/NekosApiGallery";
@@ -25,9 +20,36 @@ import NekosApiGallery from "@/components/NekosApiGallery";
 const LoaderOverlay = ({ show }: { show: boolean }) =>
   show ? (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md pointer-events-none animate-fade-in">
-      <Loader2 className="w-16 h-16 text-[#e50914] animate-spin drop-shadow-xl" />
+      <span className="w-16 h-16 rounded-full border-4 border-[#e50914] border-t-white animate-spin block" />
     </div>
   ) : null;
+
+// Navbar Component (inline - could move to its own file for clarity)
+const NavBar = ({ onSearch }: { onSearch: (v: any) => void }) => (
+  <nav className="sticky top-0 z-30 w-full bg-white/80 backdrop-blur border-b border-zinc-200 shadow-md">
+    <div className="max-w-7xl mx-auto flex justify-between items-center gap-4 py-2 px-5">
+      <div className="flex items-center gap-6">
+        <span className="text-3xl font-extrabold tracking-tight" style={{ color: "#7D36FF" }}>
+          CaptureExplorer
+        </span>
+        <a href="#" className="font-medium text-zinc-900 rounded-full bg-zinc-100 px-4 py-1.5 shadow transition hover:bg-purple-100 flex items-center gap-2">
+          <Home className="w-5 h-5" />
+          Home
+        </a>
+        <a href="#top-anime" className="hover:underline text-zinc-700 font-medium transition">Top Anime</a>
+        <a href="#seasonal" className="hover:underline text-zinc-700 font-medium transition">Seasonal</a>
+        <a href="#random" className="hover:underline text-zinc-700 font-medium transition">Random</a>
+        <a href="#characters" className="hover:underline text-zinc-700 font-medium transition">Characters</a>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="relative">
+          <AnimeSearchBar onSelect={onSearch} inputClass="!bg-zinc-100 border border-zinc-300 px-4 py-2 rounded-full !pl-10 w-60 text-sm focus:border-purple-400" placeholder="Search anime..." />
+          <Search className="absolute left-2 top-3 text-zinc-400 w-5 h-5 pointer-events-none" />
+        </div>
+      </div>
+    </div>
+  </nav>
+);
 
 const Index = () => {
   const [animeList, setAnimeList] = useState<any[]>([]);
@@ -42,8 +64,7 @@ const Index = () => {
   const [waifuName, setWaifuName] = useState<string | undefined>();
   const [waifuLoading, setWaifuLoading] = useState(false);
 
-  // For tracking tabs: added "nekos" tab
-  const [tab, setTab] = useState<"anime" | "gif" | "nekos">("anime");
+  // For future: you may introduce tabs for 'seasonal', 'random', etc.
 
   const { token, setToken } = useWaifuApiToken();
 
@@ -51,7 +72,7 @@ const Index = () => {
     setLoading(true);
     try {
       const data = await fetchTopAnime();
-      setAnimeList(data.slice(0, 28));
+      setAnimeList(data.slice(0, 16));
     } catch (e) {
       toast({
         title: "Failed to fetch anime.",
@@ -63,8 +84,8 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    if (tab === "anime") loadTopAnime();
-  }, [tab, loadTopAnime]);
+    loadTopAnime();
+  }, [loadTopAnime]);
 
   const handleCardClick = async (anime: any) => {
     setSearching(false);
@@ -92,223 +113,141 @@ const Index = () => {
     setSearching(false);
   };
 
-  // Waifu GIF logic
-  const handleWaifuGifClick = async () => {
-    let usedToken = token;
-    if (!usedToken) {
-      const input = window.prompt("Enter your Waifu.it API token:");
-      if (!input) {
-        toast({
-          title: "No token provided.",
-          description: "Waifu GIF service needs your API token.",
-          variant: "destructive",
-        });
-        return;
-      }
-      setToken(input);
-      usedToken = input;
-    }
-    setWaifuLoading(true);
-    setWaifuImg(undefined);
-    setWaifuName(undefined);
-    try {
-      // Always use v4 endpoint (per docs)
-      const res = await axios.get("https://waifu.it/api/v4/waifu", {
-        headers: { Authorization: usedToken }
-      });
-      let imgUrl, name;
-      if (res.data?.message) {
-        imgUrl = res.data.message.url || res.data.message.link || res.data.message.image;
-        name = res.data.message.name;
-      }
-      if (!imgUrl) {
-        throw new Error("No valid image found in the API response.");
-      }
-      setWaifuImg(imgUrl);
-      setWaifuName(name);
-      setWaifuOpen(true);
-    } catch (err: any) {
-      toast({
-        title: "Failed to fetch waifu GIF.",
-        description: err?.message || "Could not get GIF/image.",
-        variant: "destructive",
-      });
-    }
-    setWaifuLoading(false);
-  };
+  // Featured random anime (just use first anime for demo)
+  const featuredAnime = animeList[0] || {};
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-to-r from-[#18181e] via-[#16151a] to-[#111016]">
-        <AppSidebar />
-        <main className="flex-1 flex flex-col px-0 lg:px-0 w-full relative">
-          <LoaderOverlay show={loading || waifuLoading} />
-          <header
-            className={cn(
-              "sticky top-0 z-30 w-full bg-black/80 backdrop-blur-xl ring-1 ring-[#262626]/65 shadow-lg",
-              "transition-all"
-            )}
-          >
-            <div className="max-w-7xl mx-auto flex flex-col items-center justify-center py-4 px-5 gap-0 sm:gap-2">
-              <h1
-                className="text-[2.3rem] md:text-4xl tracking-tight font-black font-sans text-center text-white drop-shadow-[0_6px_28px_rgba(229,9,20,0.45)] select-none pointer-events-none"
-                style={{ letterSpacing: "-1.5px" }}
-              >
-                <span className="bg-gradient-to-r from-[#e50914] via-rose-800 to-pink-600 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(229,9,20,0.3)]">
-                  AnimeHub
-                </span>
-              </h1>
-              <Tabs
-                defaultValue="anime"
-                value={tab}
-                onValueChange={value => setTab(value as "anime" | "gif" | "nekos")}
-                className="w-full max-w-3xl mt-3 sm:mt-2"
-              >
-                <TabsList className="flex w-full bg-zinc-900/80 shadow rounded-full p-1">
-                  <TabsTrigger
-                    value="anime"
-                    className={cn(
-                      "transition w-1/3 rounded-full px-0 py-2 text-lg font-medium hover:bg-zinc-900/60 hover:text-white",
-                      tab === "anime"
-                        ? "bg-gradient-to-r from-[#e50914] via-red-700 to-pink-600 text-white shadow"
-                        : "text-zinc-300"
-                    )}
-                  >
-                    Anime
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="gif"
-                    className={cn(
-                      "transition w-1/3 rounded-full px-0 py-2 text-lg font-medium hover:bg-zinc-900/60 hover:text-white",
-                      tab === "gif"
-                        ? "bg-gradient-to-r from-pink-600 via-pink-800 to-[#ae1d25] text-white shadow"
-                        : "text-zinc-300"
-                    )}
-                  >
-                    Waifu GIF
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="nekos"
-                    className={cn(
-                      "transition w-1/3 rounded-full px-0 py-2 text-lg font-medium hover:bg-zinc-900/60 hover:text-white",
-                      tab === "nekos"
-                        ? "bg-gradient-to-r from-blue-700 via-blue-900 to-violet-700 text-white shadow"
-                        : "text-zinc-300"
-                    )}
-                  >
-                    NekosAPI Gallery
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent value="anime" className="w-full">
-                  <div className="w-full mt-5 flex flex-col sm:flex-row justify-center gap-2 items-center">
-                    <div className="flex-1 w-full max-w-lg">
-                      <AnimeSearchBar onSelect={handleSearchResult} />
-                    </div>
-                  </div>
-                  <main className="max-w-7xl mx-auto w-full pb-20 pt-4 px-2 sm:px-6">
-                    {loading ? (
-                      <section className="mt-6 grid gap-8 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-                        {[...Array(18)].map((_, idx) => (
-                          <Skeleton
-                            key={idx}
-                            className="aspect-[2/3] rounded-2xl w-full h-64 bg-gradient-to-b from-zinc-900/80 to-zinc-800/80 animate-pulse"
-                          />
-                        ))}
-                      </section>
-                    ) : (
-                      <section
-                        className={cn(
-                          "mt-2 grid gap-8 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6",
-                          "px-2 relative z-10"
-                        )}
-                        style={{
-                          backdropFilter: "blur(2px)",
-                          WebkitBackdropFilter: "blur(2px)",
-                        }}
-                      >
-                        {animeList.map((anime: any) => (
-                          <AnimeCard
-                            key={anime.mal_id}
-                            anime={anime}
-                            onClick={() => handleCardClick(anime)}
-                          />
-                        ))}
-                      </section>
-                    )}
-                  </main>
-                </TabsContent>
-                <TabsContent
-                  value="gif"
-                  className="w-full flex flex-col items-center py-12 min-h-[60vh]"
-                >
-                  <Button
-                    className="bg-gradient-to-r from-pink-700 to-red-500 text-white shadow-xl hover:scale-105 transition border-none px-8 py-4 rounded-xl text-lg font-bold flex items-center gap-2"
-                    onClick={handleWaifuGifClick}
-                    disabled={waifuLoading}
-                    size="lg"
-                  >
-                    <ImagePlus className="mr-2" />
-                    {waifuLoading ? "Loading..." : "Get Random Waifu GIF"}
-                  </Button>
-                  {waifuImg && (
-                    <div className="mt-8 p-4 bg-zinc-900/80 rounded-2xl shadow-2xl flex flex-col items-center border border-zinc-800/70 animate-scale-in">
-                      <img
-                        src={waifuImg}
-                        alt={waifuName || "random waifu"}
-                        className="w-80 h-80 object-contain rounded-xl shadow-lg border border-zinc-800 bg-black/80"
-                      />
-                      {waifuName && (
-                        <div className="text-lg text-white font-semibold mt-4">{waifuName}</div>
-                      )}
-                    </div>
-                  )}
-                </TabsContent>
-                <TabsContent
-                  value="nekos"
-                  className="w-full flex flex-col items-center py-12 min-h-[60vh]"
-                >
-                  <NekosApiGallery />
-                </TabsContent>
-              </Tabs>
+      <div className="min-h-screen flex flex-col w-full bg-gradient-to-br from-[#e0e0ff]/60 via-[#f8f4fa]/60 to-[#faf6fb]/90">
+        <NavBar onSearch={handleSearchResult} />
+
+        {/* Hero Banner */}
+        <section
+          className="relative flex flex-col justify-center min-h-[340px] md:min-h-[380px] w-full overflow-hidden"
+          style={{
+            background: featuredAnime.images?.jpg?.large_image_url
+              ? `url(${featuredAnime.images.jpg.large_image_url}) center/cover no-repeat`
+              : "#f8eaff",
+          }}
+        >
+          {/* Overlay blur */}
+          <div className="absolute inset-0 bg-zinc-900/50 backdrop-blur-sm" />
+          {/* Hero Content */}
+          <div className="relative z-10 px-4 py-12 sm:py-20 max-w-5xl mx-auto flex flex-col gap-4">
+            <div className="text-[#87f] font-semibold text-base flex items-center gap-2 mb-2">
+              <Star className="w-5 h-5 text-[#87f]" />
+              Featured Random Pick
             </div>
-          </header>
-          <AnimeDetailModal
-            open={modalOpen}
-            onOpenChange={setModalOpen}
-            anime={selectedAnime}
-          />
-          <WaifuGifModal
-            open={waifuOpen}
-            onOpenChange={setWaifuOpen}
-            gifUrl={waifuImg}
-            name={waifuName}
-          />
-          <footer className="w-full py-8 text-center text-neutral-400 text-sm bg-gradient-to-t from-[#000000cc] via-transparent to-transparent z-20 backdrop-blur-lg shadow-inner mt-auto">
-            <span className="font-bold tracking-wide text-white/90 drop-shadow mx-1">
-              AnimeHub
-            </span>
-            — Powered by{" "}
-            <a
-              href="https://jikan.moe/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="story-link underline font-bold text-[#e50914] hover:text-red-400 transition mx-1"
-            >
-              Jikan API
-            </a>
-            {" | Streaming by "}
-            <a
-              href="https://vidsrc.to/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="story-link underline font-bold text-[#e50914] hover:text-red-400 transition mx-1"
-            >
-              Vidsrc
-            </a>
-          </footer>
+            <div className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">{featuredAnime.title || "Tish Tash"}</div>
+            <div className="text-lg md:text-xl text-white/90 font-medium drop-shadow-sm max-w-2xl">
+              {featuredAnime.synopsis
+                ? featuredAnime.synopsis.length > 220
+                  ? featuredAnime.synopsis.substring(0, 220) + "..."
+                  : featuredAnime.synopsis
+                : "Growing up can be tough, especially when you're a family of bears and your younger brother is a bit of a wild animal. Luckily Tish has a ridiculously huge imagination and a larger than life, imaginary friend Tash. No matter what trouble..."}
+            </div>
+            <div className="flex items-center gap-4 text-white/80 font-medium mt-1">
+              <span>{featuredAnime.year || 2020}</span>
+              <span>·</span>
+              <span>{featuredAnime.episodes ? `${featuredAnime.episodes} episodes` : "26 episodes"}</span>
+            </div>
+            <div className="flex gap-4 mt-6">
+              <Button
+                className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-500 hover:scale-105 px-7 py-2.5 text-lg rounded-xl font-bold shadow-md"
+                onClick={() => handleCardClick(featuredAnime)}
+              >
+                View Details
+              </Button>
+              <Button
+                className="bg-white/90 text-purple-700 border border-purple-400 hover:bg-purple-50 hover:scale-105 px-7 py-2.5 text-lg rounded-xl font-bold shadow"
+                onClick={loadTopAnime}
+                variant="outline"
+              >
+                Get Another
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* Main Content */}
+        <main className="flex-1 w-full pb-10">
+          <LoaderOverlay show={loading || waifuLoading} />
+
+          {/* Top Anime Section */}
+          <div id="top-anime" className="max-w-7xl mx-auto w-full px-3 sm:px-8 pb-2">
+            <div className="flex items-center justify-between mt-12 mb-6">
+              <div className="flex items-center gap-3">
+                <Star className="text-purple-600" />
+                <h2 className="text-2xl md:text-3xl font-extrabold text-zinc-900 tracking-tight drop-shadow">Top Anime</h2>
+              </div>
+              <a href="#all" className="text-purple-700 font-medium underline underline-offset-2 transition hover:text-purple-500">View All →</a>
+            </div>
+            {loading ? (
+              <section className="mt-4 grid gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+                {[...Array(12)].map((_, idx) => (
+                  <Skeleton
+                    key={idx}
+                    className="aspect-[2/3] rounded-2xl w-full h-64 bg-gradient-to-b from-zinc-100 to-zinc-200 animate-pulse"
+                  />
+                ))}
+              </section>
+            ) : (
+              <section className={cn(
+                "mt-2 grid gap-7 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+              )}>
+                {animeList.slice(1, 13).map((anime: any) => (
+                  <AnimeCard
+                    key={anime.mal_id}
+                    anime={anime}
+                    onClick={() => handleCardClick(anime)}
+                    className="shadow-md rounded-2xl hover:scale-105 transition group bg-white"
+                    badgeClass="bg-gradient-to-r from-yellow-400 to-orange-400 text-white drop-shadow"
+                  />
+                ))}
+              </section>
+            )}
+          </div>
         </main>
+
+        <AnimeDetailModal
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+          anime={selectedAnime}
+        />
+        <WaifuGifModal
+          open={waifuOpen}
+          onOpenChange={setWaifuOpen}
+          gifUrl={waifuImg}
+          name={waifuName}
+        />
+        {/* You can add other sections like Seasonal/Random here */}
+        {/* Footer */}
+        <footer className="w-full py-8 text-center text-neutral-500 text-sm bg-gradient-to-t from-[#e5e0ff99] via-transparent to-transparent backdrop-blur-lg shadow-inner mt-auto">
+          <span className="font-bold tracking-wide text-[#7D36FF] drop-shadow mx-1">
+            CaptureExplorer
+          </span>
+          — Powered by{" "}
+          <a
+            href="https://jikan.moe/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="story-link underline font-bold text-purple-700 hover:text-purple-500 transition mx-1"
+          >
+            Jikan API
+          </a>
+          {" | Streaming by "}
+          <a
+            href="https://vidsrc.to/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="story-link underline font-bold text-purple-700 hover:text-purple-500 transition mx-1"
+          >
+            Vidsrc
+          </a>
+        </footer>
       </div>
-      <SidebarTrigger className="fixed top-4 left-4 z-[100] md:hidden bg-[#18181e]/90 rounded-full p-2 shadow-lg ring-1 ring-zinc-900 hover:bg-[#e50914]/90 hover:text-white transition" />
+      {/* Mobile Sidebar Trigger */}
+      <SidebarTrigger className="fixed top-4 left-4 z-[100] md:hidden bg-white/80 rounded-full p-2 shadow-lg ring-1 ring-zinc-900 hover:bg-purple-200/90 hover:text-purple-800 transition" />
     </SidebarProvider>
   );
 };
