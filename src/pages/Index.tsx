@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { fetchTopAnime, fetchAnimeDetails } from "@/lib/api";
 import AnimeCard from "@/components/AnimeCard";
 import AnimeDetailModal from "@/components/AnimeDetailModal";
@@ -52,9 +53,9 @@ const Index = () => {
   const loadTopAnime = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await fetchTopAnime();
-      setAnimeList(data);
-      pickRandomFeaturedAnime(data);
+      const result = await fetchTopAnime();
+      setAnimeList(result.data);
+      pickRandomFeaturedAnime(result.data);
     } catch (e) {
       toast({
         title: "Failed to fetch anime.",
@@ -160,7 +161,7 @@ const Index = () => {
                 <Star className="text-purple-600" />
                 <h2 className="text-2xl md:text-3xl font-extrabold text-zinc-900 tracking-tight drop-shadow">Top Anime</h2>
               </div>
-              <a href="#all" className="text-purple-700 font-medium underline underline-offset-2 transition hover:text-purple-500">View All →</a>
+              <Link to="/browse/all" className="text-purple-700 font-medium underline underline-offset-2 transition hover:text-purple-500">View All →</Link>
             </div>
             {loading ? (
               <section className="mt-4 grid gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">

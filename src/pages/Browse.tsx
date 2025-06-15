@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { fetchAnimeByLetter, fetchAnimeDetails } from "@/lib/api";
@@ -67,6 +66,8 @@ const Browse = () => {
   
   const handleSearch = () => {};
 
+  const pageTitle = letter === 'all' ? 'Top Anime Series' : `Anime starting with "${letter?.toUpperCase()}"`;
+
   return (
     <div className="min-h-screen flex flex-col w-full bg-gradient-to-br from-[#e0e0ff]/60 via-[#f8f4fa]/60 to-[#faf6fb]/90">
       <NavBar onSearch={handleSearch} />
@@ -78,7 +79,7 @@ const Browse = () => {
                       <ArrowLeft className="w-6 h-6 text-zinc-700" />
                   </Link>
                   <h1 className="text-3xl md:text-4xl font-extrabold text-zinc-900 tracking-tight drop-shadow">
-                      Anime starting with "{letter?.toUpperCase()}"
+                      {pageTitle}
                   </h1>
               </div>
           </div>
@@ -122,4 +123,3 @@ const Browse = () => {
 };
 
 export default Browse;
-

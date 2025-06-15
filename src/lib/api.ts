@@ -1,10 +1,11 @@
+
 const BASE_URL = "https://api.jikan.moe/v4";
 
 export async function fetchTopAnime(page = 1) {
   const res = await fetch(`${BASE_URL}/top/anime?page=${page}`);
   if (!res.ok) throw new Error("Failed to fetch top anime");
   const data = await res.json();
-  return data.data;
+  return data;
 }
 
 export async function searchAnime(query: string) {
