@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
@@ -109,11 +108,11 @@ const TagSearchInput: React.FC<TagSearchInputProps> = ({ value, onChange, id }) 
         />
         {open && (
             <CommandList className="absolute z-50 mt-1 w-full rounded-md border bg-popover text-popover-foreground shadow-lg">
-              {loading && !suggestions.length ? (
-                <div className="p-2 flex items-center justify-center text-sm text-muted-foreground">
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    <span>Loading...</span>
-                </div>
+              {loading ? (
+                <CommandItem disabled className="p-2 flex items-center justify-center text-sm text-muted-foreground">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <span>Loading...</span>
+                </CommandItem>
               ) : (
                 <>
                   <CommandEmpty>No results found for "{getCurrentTag()}"</CommandEmpty>
