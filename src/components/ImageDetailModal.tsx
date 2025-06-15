@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
@@ -104,7 +105,7 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
     onOpenChange(false);
   };
   return <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl w-[95vw] h-[90vh] p-0 gap-0 bg-zinc-900 border-zinc-800 text-zinc-50 overflow-hidden">
+      <DialogContent className="max-w-screen-2xl w-[95vw] h-[95vh] p-0 gap-0 bg-zinc-900 border-zinc-800 text-zinc-50 overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr] h-full">
           <div className="h-full flex flex-col">
             <div className="p-6 border-b border-zinc-800">
