@@ -105,8 +105,8 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
     onOpenChange(false);
   };
   return <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-screen-2xl w-[95vw] h-[95vh] p-0 gap-0 bg-zinc-900 border-zinc-800 text-zinc-50 overflow-hidden">
-        <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr] h-full">
+      <DialogContent className="max-w-screen-2xl w-[98vw] h-[98vh] p-0 gap-0 bg-zinc-900 border-zinc-800 text-zinc-50 overflow-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] lg:grid-cols-[320px_1fr] h-full">
           <div className="h-full flex flex-col">
             <div className="p-6 border-b border-zinc-800">
                <h3 className="text-2xl font-bold mb-4">Post Details</h3>
@@ -125,8 +125,8 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
               </div>
             </ScrollArea>
           </div>
-          <div className="h-full flex items-center justify-center bg-black overflow-hidden">
-             {post.large_file_url ? <img src={post.large_file_url} alt={post.tag_string_general} className="w-full h-full object-contain" /> : <div className="text-white">Image not available</div>}
+          <div className="h-full flex items-center justify-center bg-black overflow-hidden p-2">
+             {post.large_file_url ? <img src={post.large_file_url} alt={post.tag_string_general} className="object-contain max-w-full max-h-full" /> : <div className="text-white">Image not available</div>}
           </div>
         </div>
       </DialogContent>
