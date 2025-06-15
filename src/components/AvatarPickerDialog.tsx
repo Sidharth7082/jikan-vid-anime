@@ -40,7 +40,7 @@ export function AvatarPickerDialog({ children, onAvatarSelect }: AvatarPickerDia
                   <AvatarImage src={url} alt={`Avatar ${avatarNames[index]}`} />
                   <AvatarFallback>{avatarNames[index].substring(0,2)}</AvatarFallback>
                 </Avatar>
-                <span className="text-sm text-gray-400 group-hover:text-white">{avatarNames[index]}</span>
+                <span className="text-sm text-gray-300 group-hover:text-white">{avatarNames[index]}</span>
               </button>
             </DialogClose>
           ))}
