@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback } from "react";
 import { fetchTopAnime, fetchAnimeDetails } from "@/lib/api";
 import AnimeCard from "@/components/AnimeCard";
@@ -29,6 +30,7 @@ const Index = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
+  const [featuredAnime, setFeaturedAnime] = useState<any | null>(null);
 
   // Waifu GIF modal state
   const [waifuOpen, setWaifuOpen] = useState(false);
@@ -40,11 +42,19 @@ const Index = () => {
 
   const { token, setToken } = useWaifuApiToken();
 
+  const pickRandomFeaturedAnime = useCallback((list: any[]) => {
+    if (list && list.length > 0) {
+      const randomIndex = Math.floor(Math.random() * list.length);
+      setFeaturedAnime(list[randomIndex]);
+    }
+  }, []);
+
   const loadTopAnime = useCallback(async () => {
     setLoading(true);
     try {
       const data = await fetchTopAnime();
-      setAnimeList(data.slice(0, 16));
+      setAnimeList(data);
+      pickRandomFeaturedAnime(data);
     } catch (e) {
       toast({
         title: "Failed to fetch anime.",
@@ -53,7 +63,7 @@ const Index = () => {
       });
     }
     setLoading(false);
-  }, []);
+  }, [pickRandomFeaturedAnime]);
 
   useEffect(() => {
     loadTopAnime();
@@ -85,9 +95,6 @@ const Index = () => {
     setSearching(false);
   };
 
-  // Featured random anime (just use first anime for demo)
-  const featuredAnime = animeList[0] || {};
-
   return (
     <SidebarProvider>
       <div className="min-h-screen flex flex-col w-full bg-gradient-to-br from-[#e0e0ff]/60 via-[#f8f4fa]/60 to-[#faf6fb]/90">
@@ -97,7 +104,7 @@ const Index = () => {
         <section
           className="relative flex flex-col justify-center min-h-[340px] md:min-h-[380px] w-full overflow-hidden"
           style={{
-            background: featuredAnime.images?.jpg?.large_image_url
+            background: featuredAnime?.images?.jpg?.large_image_url
               ? `url(${featuredAnime.images.jpg.large_image_url}) center/cover no-repeat`
               : "#f8eaff",
           }}
@@ -110,29 +117,30 @@ const Index = () => {
               <Star className="w-5 h-5 text-[#87f]" />
               Featured Random Pick
             </div>
-            <div className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">{featuredAnime.title || "Tish Tash"}</div>
+            <div className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">{featuredAnime?.title || "Tish Tash"}</div>
             <div className="text-lg md:text-xl text-white/90 font-medium drop-shadow-sm max-w-2xl">
-              {featuredAnime.synopsis
+              {featuredAnime?.synopsis
                 ? featuredAnime.synopsis.length > 220
                   ? featuredAnime.synopsis.substring(0, 220) + "..."
                   : featuredAnime.synopsis
                 : "Growing up can be tough, especially when you're a family of bears and your younger brother is a bit of a wild animal. Luckily Tish has a ridiculously huge imagination and a larger than life, imaginary friend Tash. No matter what trouble..."}
             </div>
             <div className="flex items-center gap-4 text-white/80 font-medium mt-1">
-              <span>{featuredAnime.year || 2020}</span>
+              <span>{featuredAnime?.year || 2020}</span>
               <span>·</span>
-              <span>{featuredAnime.episodes ? `${featuredAnime.episodes} episodes` : "26 episodes"}</span>
+              <span>{featuredAnime?.episodes ? `${featuredAnime.episodes} episodes` : "26 episodes"}</span>
             </div>
             <div className="flex gap-4 mt-6">
               <Button
                 className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-500 hover:scale-105 px-7 py-2.5 text-lg rounded-xl font-bold shadow-md"
-                onClick={() => handleCardClick(featuredAnime)}
+                onClick={() => featuredAnime && handleCardClick(featuredAnime)}
+                disabled={!featuredAnime}
               >
                 View Details
               </Button>
               <Button
                 className="bg-white/90 text-purple-700 border border-purple-400 hover:bg-purple-50 hover:scale-105 px-7 py-2.5 text-lg rounded-xl font-bold shadow"
-                onClick={loadTopAnime}
+                onClick={() => pickRandomFeaturedAnime(animeList)}
                 variant="outline"
               >
                 Get Another
