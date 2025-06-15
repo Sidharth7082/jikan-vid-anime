@@ -62,7 +62,7 @@ const AuthPage = () => {
             {showResetView ? (
                <ResetPasswordForm setShowResetView={setShowResetView} />
             ) : (
-              <Tabs defaultValue="signin" className="w-full" onValueChange={() => form.clearErrors()}>
+              <Tabs defaultValue="signin" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="signin">Sign In</TabsTrigger>
                   <TabsTrigger value="signup">Sign Up</TabsTrigger>
