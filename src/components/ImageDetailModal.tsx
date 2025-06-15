@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
@@ -125,8 +124,20 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
               </div>
             </ScrollArea>
           </div>
-          <div className="h-full flex items-center justify-center bg-black overflow-hidden p-2">
-             {post.large_file_url ? <img src={post.large_file_url} alt={post.tag_string_general} className="object-contain max-w-full max-h-full" /> : <div className="text-white">Image not available</div>}
+          <div className="h-full bg-black">
+            <ScrollArea className="h-full w-full">
+              <div className="flex min-h-full items-center justify-center p-4">
+                {post.large_file_url ? (
+                  <img
+                    src={post.large_file_url}
+                    alt={post.tag_string_general}
+                    className="max-w-none"
+                  />
+                ) : (
+                  <div className="text-white">Image not available</div>
+                )}
+              </div>
+            </ScrollArea>
           </div>
         </div>
       </DialogContent>
