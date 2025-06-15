@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from "react";
 import { fetchTopAnime, fetchAnimeDetails } from "@/lib/api";
 import AnimeCard from "@/components/AnimeCard";
@@ -218,7 +217,6 @@ const Index = () => {
                         key={anime.mal_id}
                         anime={anime}
                         onClick={() => handleCardClick(anime)}
-                        className="rounded-2xl shadow-lg hover:shadow-2xl transition-shadow border border-zinc-900/70"
                       />
                     ))}
                   </section>
