@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X, ArrowLeft, Video, Subtitles } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -80,9 +80,11 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
           {/* Right: Details + streaming */}
           <div className="flex-1 min-w-0 text-white flex flex-col gap-3 md:gap-5">
             <div>
-              <p className="line-clamp-6 mb-3 text-neutral-200 leading-relaxed font-medium" style={{ textShadow: "0 0 12px #18181866" }}>
-                {anime.synopsis}
-              </p>
+              <DialogDescription asChild>
+                <p className="line-clamp-6 mb-3 text-neutral-200 leading-relaxed font-medium" style={{ textShadow: "0 0 12px #18181866" }}>
+                  {anime.synopsis || "No synopsis available."}
+                </p>
+              </DialogDescription>
               <div className="flex flex-wrap gap-2 mb-3">
                 {anime.genres?.map((g: any) => (
                   <span className="bg-[#232323] text-[#f3f3f3] px-2 py-0.5 text-xs rounded" key={g.name}>
@@ -126,6 +128,7 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
                   title={`${anime.title} episode ${episode} ${streamType}`}
                   src={embedUrl}
                   loading="lazy"
+                  allow="fullscreen"
                   allowFullScreen
                   className="w-full h-full min-h-[240px] bg-black"
                   style={{ minHeight: 320, borderRadius: 12 }}
