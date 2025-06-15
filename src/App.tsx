@@ -11,6 +11,7 @@ import Browse from "./pages/Browse";
 import ProfilePage from "./pages/ProfilePage";
 import GifsPage from "./pages/GifsPage";
 import DanbooruPage from "./pages/DanbooruPage";
+import SettingsPage from "./pages/SettingsPage";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/gifs" element={<GifsPage />} />
           <Route path="/danbooru" element={<DanbooruPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
