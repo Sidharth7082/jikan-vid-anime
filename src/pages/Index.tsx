@@ -6,6 +6,7 @@ import AnimeDetailModal from "@/components/AnimeDetailModal";
 import AnimeSearchBar from "@/components/AnimeSearchBar";
 import { toast } from "@/hooks/use-toast";
 
+// To mimic Netflix's immersive UX with a black-to-gray gradient and overlays
 const Index = () => {
   const [animeList, setAnimeList] = useState<any[]>([]);
   const [selectedAnime, setSelectedAnime] = useState<any | null>(null);
@@ -43,35 +44,46 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-950 to-gray-800 px-0 py-0">
-      <header className="sticky top-0 z-10 px-0 py-8 bg-bg/80 backdrop-blur">
-        <h1 className="text-4xl tracking-tight font-extrabold text-center mb-2 text-primary-foreground drop-shadow-md">
-          Anime Vault
+    <div className="min-h-screen w-full bg-gradient-to-br from-[#18181e] via-[#14171e] to-[#141414] relative">
+      {/* Netflix-like translucent black overlay at top */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-[#2d2e36cc] via-transparent to-transparent opacity-85 pointer-events-none z-0" />
+      <header className="sticky top-0 z-10 px-0 py-10 bg-gradient-to-b from-black/80 via-black/60 to-transparent backdrop-blur shadow-xl">
+        <h1 className="text-[2.7rem] md:text-5xl tracking-tight font-black font-sans text-left px-8 mb-1 text-white drop-shadow-[0_4px_32px_rgba(0,0,0,0.66)] select-none" style={{
+          letterSpacing: "-1.5px"
+        }}>
+          <span className="bg-gradient-to-r from-red-600 to-[#e50914] bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(229,9,20,0.58)]">
+            Anime<span className="font-black">flix</span>
+          </span>
         </h1>
-        <p className="max-w-2xl mx-auto text-lg text-center mb-4 text-muted-foreground">
-          Discover, search, and watch trending anime. Data by Jikan/MAL, streams via Vidsrc demo links.
+        <p className="max-w-2xl ml-8 text-xl text-left mb-5 text-neutral-300 font-medium drop-shadow select-none">
+          Watch top trending anime — crisp UI, immersive like Netflix. Search or select a title to learn more!
         </p>
-        <AnimeSearchBar
-          onSelect={async (anime) => {
-            await handleCardClick(anime);
-          }}
-        />
+        <div className="max-w-md mx-8">
+          <AnimeSearchBar
+            onSelect={async (anime) => {
+              await handleCardClick(anime);
+            }}
+          />
+        </div>
       </header>
-      <main className="max-w-7xl mx-auto w-full px-4 pb-16">
+      <main className="max-w-7xl mx-auto w-full pb-16 pt-6">
         {loading ? (
-          <div className="w-full flex items-center justify-center py-16">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <div className="w-full flex items-center justify-center py-24">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#e50914]"></div>
           </div>
         ) : (
           <section
             className="
-              mt-8 grid gap-7
-              grid-cols-1
-              sm:grid-cols-2
-              md:grid-cols-3
-              lg:grid-cols-4
-              xl:grid-cols-5
-              2xl:grid-cols-6
+              mt-3 grid gap-7
+              grid-cols-2
+              sm:grid-cols-3
+              md:grid-cols-4
+              lg:grid-cols-5
+              xl:grid-cols-6
+              2xl:grid-cols-7
+              px-4
+              relative
+              z-10
             "
           >
             {animeList.map((anime: any) => (
@@ -79,6 +91,7 @@ const Index = () => {
                 key={anime.mal_id}
                 anime={anime}
                 onClick={() => handleCardClick(anime)}
+                // Add a prop if you make theme/dark variants
               />
             ))}
           </section>
@@ -89,8 +102,9 @@ const Index = () => {
         onOpenChange={setModalOpen}
         anime={selectedAnime}
       />
-      <footer className="w-full py-6 text-center text-muted-foreground text-xs mt-8">
-        Built with <span className="font-medium">Lovable</span> · Data by <a href="https://jikan.moe/" target="_blank" className="underline">Jikan API</a>
+      <footer className="w-full py-7 text-center text-neutral-400 text-sm mt-16 bg-gradient-to-t from-[#000b] via-transparent to-transparent z-20">
+        <span className="font-semibold tracking-wide text-white/90">Animeflix</span>{" "}
+        — Powered by <a href="https://jikan.moe/" target="_blank" rel="noopener noreferrer" className="underline font-semibold text-[#e50914] hover:text-red-400 transition">Jikan API</a>
       </footer>
     </div>
   );

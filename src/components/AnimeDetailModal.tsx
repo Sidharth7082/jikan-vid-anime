@@ -1,55 +1,47 @@
 
 import React from "react";
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   anime: any | null;
 }
-const getAnimeStreamingId = (anime: any) => {
-  // Try to find id from external links for Anilist, TMDB, IMDB
-  const anilist = anime?.external?.find((x: any) => /anilist/i.test(x.name));
-  if (anilist?.url && anilist.url.match(/anilist\.co\/anime\/(\d+)/i)) {
-    return { type: "ani", id: RegExp.$1 };
-  }
-  // MyAnimeList id fallback
-  if (anime?.mal_id) return { type: "mal", id: anime.mal_id };
-  return null;
-};
 
 const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
   if (!anime) return null;
-  // try to get a streaming id for vidsrc
   const mainId = anime.mal_id;
-  // Unfortunately, for real embed on Vidsrc, need TMDB, IMDb or Anilist id - for now using MAL id for demo
-  // To get TMDB/IMDB id, more API work needed (future improvement).
   const episodeExample = 1;
+  // Demo embed, Netflix would use their own player!
   const embedUrl = `https://vidsrc.cc/v2/embed/anime/${mainId}/${episodeExample}/sub`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl sm:max-w-2xl w-full overflow-y-auto animate-fade-in">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold mb-1">{anime.title ?? "Anime"}</DialogTitle>
+      <DialogContent className="max-w-3xl sm:max-w-2xl w-full overflow-y-auto animate-fade-in font-sans bg-gradient-to-br from-[#19191e] via-[#101112] to-[#18181e] shadow-[0_12px_40px_0_rgba(18,16,39,0.92)] border-2 border-[#232324] rounded-2xl p-0">
+        <DialogHeader className="bg-gradient-to-br from-[#1d1c20] to-[#17181a] rounded-t-2xl p-6 pb-4">
+          <DialogTitle className="text-3xl font-black mb-1 text-white tracking-tight" style={{letterSpacing: "-1.2px"}}>
+            {anime.title ?? "Anime"}
+          </DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col sm:flex-row gap-6">
+        <div className="flex flex-col sm:flex-row gap-8 px-6 pb-6">
           <img
             src={anime.images?.webp?.large_image_url || anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url}
             alt={anime.title}
-            className="rounded-xl object-cover shadow-lg w-40 h-56 mx-auto sm:mx-0"
+            className="rounded-xl object-cover shadow-xl w-44 h-60 mx-auto sm:mx-0 border-2 border-[#222223]"
             loading="lazy"
           />
-          <div className="flex-1 min-w-0">
-            <p className="line-clamp-6 mb-2 text-muted-foreground">{anime.synopsis}</p>
-            <div className="flex flex-wrap gap-2 mb-2">
+          <div className="flex-1 min-w-0 text-white">
+            <p className="line-clamp-6 mb-4 text-neutral-200 leading-relaxed font-medium" style={{ textShadow: "0 0 10px #18181866" }}>
+              {anime.synopsis}
+            </p>
+            <div className="flex flex-wrap gap-2 mb-4">
               {anime.genres?.map((g: any) => (
-                <span className="bg-accent px-2 py-0.5 text-xs rounded text-accent-foreground" key={g.name}>
+                <span className="bg-[#232323] text-[#f3f3f3] px-2 py-0.5 text-xs rounded" key={g.name}>
                   {g.name}
                 </span>
               ))}
               {anime.rating && (
-                <span className="bg-muted px-2 py-0.5 rounded text-xs">{anime.rating}</span>
+                <span className="bg-[#232323] px-2 py-0.5 rounded text-xs text-neutral-200">{anime.rating}</span>
               )}
             </div>
             <div className="flex flex-col sm:flex-row gap-3 mt-3">
@@ -57,7 +49,8 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
                 href={anime.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn inline-flex justify-center items-center bg-primary text-primary-foreground rounded px-4 py-2 font-bold shadow hover:scale-105 transition transform"
+                className="inline-flex justify-center items-center bg-[#e50914] text-white rounded px-6 py-2 font-bold shadow hover:bg-[#e50918] transition"
+                style={{ letterSpacing: "1px" }}
               >
                 View on MyAnimeList
               </a>
@@ -65,9 +58,10 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
                 href={embedUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn inline-flex justify-center items-center bg-background border-2 border-primary text-primary rounded px-4 py-2 font-bold hover:bg-primary/10 transition"
+                className="inline-flex justify-center items-center bg-[rgba(23,24,31,0.95)] text-[#e50914] border border-[#e50914] rounded px-6 py-2 font-bold hover:bg-[#e50914] hover:text-white transition"
+                style={{ letterSpacing: "1px" }}
               >
-                Watch (Sample Episode)
+                ▶ Watch Demo Episode
               </a>
             </div>
           </div>
