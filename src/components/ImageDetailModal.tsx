@@ -6,7 +6,6 @@ import { ExternalLink, Download, Loader2, ArrowLeft, ArrowRight } from 'lucide-r
 import { Button } from './ui/button';
 import { useToast } from './ui/use-toast';
 import axios from 'axios';
-
 interface Post {
   id: number;
   large_file_url: string;
@@ -67,21 +66,17 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
   const {
     toast
   } = useToast();
-
   useEffect(() => {
     if (open) {
       setCurrentIndex(initialIndex);
     }
   }, [initialIndex, open]);
-  
   const handleNext = useCallback(() => {
     setCurrentIndex(prev => (prev + 1) % posts.length);
   }, [posts.length]);
-
   const handlePrev = useCallback(() => {
     setCurrentIndex(prev => (prev - 1 + posts.length) % posts.length);
   }, [posts.length]);
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight') handleNext();
@@ -92,10 +87,8 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [handleNext, handlePrev]);
-
   const post = posts[currentIndex];
   if (!post) return null;
-
   const handleDownload = async () => {
     if (!post.large_file_url) {
       toast({
@@ -148,10 +141,7 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
                      {isDownloading ? 'Downloading...' : 'Download'}
                  </Button>
                  <Button variant="outline" size="sm" asChild className="bg-transparent border-zinc-700 hover:bg-zinc-800 hover:text-white">
-                   <a href={`https://danbooru.donmai.us/posts/${post.id}`} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink size={16} className="mr-2" />
-                    View on Danbooru
-                   </a>
+                   
                  </Button>
                </div>
             </div>
@@ -166,8 +156,7 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
             </ScrollArea>
           </div>
           <div className="relative h-full bg-black flex items-center justify-center">
-             {posts.length > 1 && (
-              <>
+             {posts.length > 1 && <>
                 <Button onClick={handlePrev} variant="ghost" size="icon" className="absolute left-2 top-1/2 -translate-y-1/2 z-20 h-16 w-16 text-white/50 hover:text-white hover:bg-black/20 rounded-full">
                   <ArrowLeft size={32} />
                   <span className="sr-only">Previous Image</span>
@@ -176,27 +165,15 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
                   <ArrowRight size={32} />
                   <span className="sr-only">Next Image</span>
                 </Button>
-              </>
-            )}
+              </>}
             <ScrollArea className="h-full w-full">
               <div className="flex min-h-full items-center justify-center p-4">
-                {post.large_file_url ? (
-                  <img
-                    src={post.large_file_url}
-                    alt={post.tag_string_general}
-                    className="max-w-full max-h-[96vh] object-contain transition-opacity duration-300"
-                    key={post.id}
-                  />
-                ) : (
-                  <div className="text-white">Image not available</div>
-                )}
+                {post.large_file_url ? <img src={post.large_file_url} alt={post.tag_string_general} className="max-w-full max-h-[96vh] object-contain transition-opacity duration-300" key={post.id} /> : <div className="text-white">Image not available</div>}
               </div>
             </ScrollArea>
-             {posts.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-sm px-3 py-1 rounded-full z-10">
+             {posts.length > 1 && <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-sm px-3 py-1 rounded-full z-10">
                     {currentIndex + 1} / {posts.length}
-                </div>
-            )}
+                </div>}
           </div>
         </div>
       </DialogContent>
