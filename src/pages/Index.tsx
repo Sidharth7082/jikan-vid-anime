@@ -41,10 +41,12 @@ const NavBar = ({ onSearch }: { onSearch: (v: any) => void }) => (
         <a href="#characters" className="hover:underline text-zinc-700 font-medium transition">Characters</a>
       </div>
       <div className="flex items-center gap-2">
-        <div className="relative">
-          <AnimeSearchBar onSelect={onSearch} inputClass="!bg-zinc-100 border border-zinc-300 px-4 py-2 rounded-full !pl-10 w-60 text-sm focus:border-purple-400" placeholder="Search anime..." />
-          <Search className="absolute left-2 top-3 text-zinc-400 w-5 h-5 pointer-events-none" />
-        </div>
+        <AnimeSearchBar
+          onSelect={onSearch}
+          className="max-w-none w-auto mb-0"
+          wrapperClass="!bg-zinc-100 !border-zinc-300 !rounded-full w-60"
+          placeholder="Search anime..."
+        />
       </div>
     </div>
   </nav>

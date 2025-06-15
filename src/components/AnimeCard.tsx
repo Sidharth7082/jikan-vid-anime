@@ -1,6 +1,7 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { ImageIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Props {
   anime: {
@@ -11,11 +12,13 @@ interface Props {
     genres?: { name: string }[];
   };
   onClick: () => void;
+  className?: string;
+  badgeClass?: string;
 }
 
-const AnimeCard: React.FC<Props> = ({ anime, onClick }) => (
+const AnimeCard: React.FC<Props> = ({ anime, onClick, className, badgeClass }) => (
   <Card
-    className="relative group p-0 cursor-pointer transition-transform duration-200 hover:scale-[1.06] hover:z-20 focus:z-20 focus:ring-2 ring-[#e50914] bg-gradient-to-b from-[#232526dd] to-[#19191ea8] shadow-xl overflow-hidden flex flex-col"
+    className={cn("relative group p-0 cursor-pointer transition-transform duration-200 hover:scale-[1.06] hover:z-20 focus:z-20 focus:ring-2 ring-[#e50914] bg-gradient-to-b from-[#232526dd] to-[#19191ea8] shadow-xl overflow-hidden flex flex-col", className)}
     tabIndex={0}
     aria-label={anime.title}
     onClick={onClick}
@@ -65,7 +68,7 @@ const AnimeCard: React.FC<Props> = ({ anime, onClick }) => (
       </div>
       <div className="mt-auto text-sm flex items-center gap-2">
         {!!anime.score && (
-          <span className="bg-[#e50914] text-white rounded px-2 py-0.5 font-bold animate-fade-in shadow shadow-[#e50914]/40 tracking-wide drop-shadow">
+          <span className={cn("bg-[#e50914] text-white rounded px-2 py-0.5 font-bold animate-fade-in shadow shadow-[#e50914]/40 tracking-wide drop-shadow", badgeClass)}>
             ★ {anime.score}
           </span>
         )}

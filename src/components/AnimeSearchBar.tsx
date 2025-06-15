@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { searchAnime } from "@/lib/api";
 import { Input } from "@/components/ui/input";
@@ -8,9 +7,12 @@ import { cn } from "@/lib/utils";
 
 interface Props {
   onSelect: (anime: any | null) => void;
+  className?: string;
+  wrapperClass?: string;
+  placeholder?: string;
 }
 
-const AnimeSearchBar: React.FC<Props> = ({ onSelect }) => {
+const AnimeSearchBar: React.FC<Props> = ({ onSelect, className, wrapperClass, placeholder }) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -46,13 +48,13 @@ const AnimeSearchBar: React.FC<Props> = ({ onSelect }) => {
   };
 
   return (
-    <div className="relative w-full max-w-lg mx-auto mb-2">
-      <div className="flex items-center bg-card/75 rounded-lg border px-2 py-1 shadow focus-within:ring-2 ring-[#e50914] backdrop-blur">
+    <div className={cn("relative w-full max-w-lg mx-auto mb-2", className)}>
+      <div className={cn("flex items-center bg-card/75 rounded-lg border px-2 py-1 shadow focus-within:ring-2 ring-[#e50914] backdrop-blur", wrapperClass)}>
         <Search className="text-muted-foreground mr-2" size={20} />
         <Input
           value={query}
           onChange={handleInput}
-          placeholder="Search anime (e.g. Naruto, Attack on Titan)…"
+          placeholder={placeholder || "Search anime (e.g. Naruto, Attack on Titan)…"}
           className="!border-0 bg-transparent font-medium text-base focus:ring-0 focus-visible:ring-0"
           autoFocus={false}
           aria-label="Search anime"
