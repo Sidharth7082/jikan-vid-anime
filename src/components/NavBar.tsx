@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
@@ -50,6 +51,7 @@ const NavBar = ({ onSearch }: { onSearch: (v: any) => void }) => {
           <a href="/#top-anime" className="hover:underline text-zinc-700 font-medium transition">Top Anime</a>
           <a href="/#seasonal" className="hover:underline text-zinc-700 font-medium transition">Seasonal</a>
           <Link to="/gifs" className="hover:underline text-zinc-700 font-medium transition">GIFs</Link>
+          <Link to="/danbooru" className="hover:underline text-zinc-700 font-medium transition">Danbooru</Link>
           <a href="/#image" className="hover:underline text-zinc-700 font-medium transition">Image</a>
         </div>
         <div className="flex items-center gap-4">

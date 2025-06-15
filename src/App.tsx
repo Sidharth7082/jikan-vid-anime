@@ -10,6 +10,7 @@ import AuthPage from "./pages/Auth";
 import Browse from "./pages/Browse";
 import ProfilePage from "./pages/ProfilePage";
 import GifsPage from "./pages/GifsPage";
+import DanbooruPage from "./pages/DanbooruPage";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/browse/:letter" element={<Browse />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/gifs" element={<GifsPage />} />
+          <Route path="/danbooru" element={<DanbooruPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
