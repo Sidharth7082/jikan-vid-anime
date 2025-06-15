@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
@@ -9,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import RandomTags from "@/components/RandomTags";
 
 const DanbooruPage = () => {
   const [tags, setTags] = useState("");
@@ -26,6 +26,10 @@ const DanbooruPage = () => {
     setCurrentSearch(searchString.trim());
   };
 
+  const handleTagClick = (tag: string) => {
+    setTags(prev => (prev ? `${prev} ${tag}` : tag).trim());
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex flex-col w-full bg-gradient-to-br from-[#e0e0ff]/60 via-[#f8f4fa]/60 to-[#faf6fb]/90">
@@ -41,41 +45,44 @@ const DanbooruPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] lg:grid-cols-[320px_1fr] gap-8 items-start">
               {/* Left Sidebar */}
               <aside className="md:sticky top-24 h-fit">
-                <div className="p-4 border border-zinc-200/80 rounded-2xl bg-white/60 shadow-lg backdrop-blur-sm space-y-4">
-                  <h3 className="font-bold text-lg text-zinc-800">Search Options</h3>
-                  <form onSubmit={handleSearch} className="flex flex-col gap-4">
-                    <div>
-                      <Label htmlFor="tags-input" className="font-semibold text-zinc-700 mb-2 block">Tags</Label>
-                      <Input 
-                        id="tags-input"
-                        placeholder="e.g. 'genshin_impact long_hair'"
-                        value={tags}
-                        onChange={(e) => setTags(e.target.value)}
-                      />
-                    </div>
+                <div className="p-4 border border-zinc-200/80 rounded-2xl bg-white/60 shadow-lg backdrop-blur-sm">
+                  <div className="space-y-4">
+                    <h3 className="font-bold text-lg text-zinc-800">Search Options</h3>
+                    <form onSubmit={handleSearch} className="flex flex-col gap-4">
+                      <div>
+                        <Label htmlFor="tags-input" className="font-semibold text-zinc-700 mb-2 block">Tags</Label>
+                        <Input 
+                          id="tags-input"
+                          placeholder="e.g. 'genshin_impact long_hair'"
+                          value={tags}
+                          onChange={(e) => setTags(e.target.value)}
+                        />
+                      </div>
 
-                    <div>
-                      <h4 className="font-semibold text-zinc-700 mb-2">Rating</h4>
-                      <RadioGroup value={rating} onValueChange={setRating} className="space-y-1">
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="all" id="r-all" />
-                          <Label htmlFor="r-all">All</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="sfw" id="r-sfw" />
-                          <Label htmlFor="r-sfw">SFW</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="nsfw" id="r-nsfw" />
-                          <Label htmlFor="r-nsfw">NSFW</Label>
-                        </div>
-                      </RadioGroup>
-                    </div>
-                    <Button type="submit" className="w-full">
-                      <Search className="mr-2 h-4 w-4" />
-                      Search
-                    </Button>
-                  </form>
+                      <div>
+                        <h4 className="font-semibold text-zinc-700 mb-2">Rating</h4>
+                        <RadioGroup value={rating} onValueChange={setRating} className="space-y-1">
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="all" id="r-all" />
+                            <Label htmlFor="r-all">All</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="sfw" id="r-sfw" />
+                            <Label htmlFor="r-sfw">SFW</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="nsfw" id="r-nsfw" />
+                            <Label htmlFor="r-nsfw">NSFW</Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                      <Button type="submit" className="w-full">
+                        <Search className="mr-2 h-4 w-4" />
+                        Search
+                      </Button>
+                    </form>
+                  </div>
+                  <RandomTags onTagClick={handleTagClick} />
                 </div>
               </aside>
 
