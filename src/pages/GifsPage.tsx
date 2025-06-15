@@ -4,7 +4,6 @@ import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import OtakuGifsGallery from "@/components/OtakuGifsGallery";
-import { Gift } from "lucide-react";
 
 const GifsPage = () => {
   return (
@@ -15,14 +14,9 @@ const GifsPage = () => {
         {/* Main Content */}
         <main className="flex-1 w-full py-10">
           <div className="max-w-7xl mx-auto w-full px-3 sm:px-8">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <Gift className="text-purple-600 w-7 h-7" />
-                <h2 className="text-2xl md:text-3xl font-extrabold text-zinc-900 tracking-tight drop-shadow">GIF Gallery</h2>
-              </div>
-              <a href="https://otakugifs.xyz/" target="_blank" rel="noopener noreferrer" className="text-purple-700 font-medium underline underline-offset-2 transition hover:text-purple-500">
-                Powered by otakugifs.xyz →
-              </a>
+            <div className="mb-6">
+              <h2 className="text-3xl md:text-4xl font-extrabold text-zinc-900 tracking-tight drop-shadow">GIFs</h2>
+              <p className="text-lg text-zinc-600 mt-1">Animated reactions and emotions</p>
             </div>
             <OtakuGifsGallery />
           </div>
