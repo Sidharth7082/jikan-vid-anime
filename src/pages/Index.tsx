@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback } from "react";
 import { fetchTopAnime, fetchAnimeDetails } from "@/lib/api";
 import AnimeDetailModal from "@/components/AnimeDetailModal";
@@ -10,6 +11,7 @@ import HeroBanner from "@/components/HeroBanner";
 import TopAnimeSection from "@/components/TopAnimeSection";
 import ImageGallerySection from "@/components/ImageGallerySection";
 import SeasonalAnimeSection from "@/components/SeasonalAnimeSection";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Loader overlay for async actions
 const LoaderOverlay = ({ show }: { show: boolean }) =>
@@ -104,13 +106,27 @@ const Index = () => {
         <main className="flex-1 w-full pb-10">
           <LoaderOverlay show={loading || waifuLoading} />
 
-          <TopAnimeSection
-            loading={loading}
-            animeList={animeList}
-            onCardClick={handleCardClick}
-          />
-
-          <SeasonalAnimeSection onCardClick={handleCardClick} />
+          <Tabs defaultValue="top-anime" className="w-full">
+            <div className="flex justify-center border-b bg-white/30 backdrop-blur-sm sticky top-16 z-10">
+              <div className="max-w-7xl w-full px-3 sm:px-8">
+                <TabsList className="bg-transparent p-0 h-14">
+                  <TabsTrigger value="top-anime" className="text-base font-semibold text-zinc-600 data-[state=active]:text-purple-700 data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-purple-700 rounded-none h-full px-5">Top Anime</TabsTrigger>
+                  <TabsTrigger value="seasonal" className="text-base font-semibold text-zinc-600 data-[state=active]:text-purple-700 data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-purple-700 rounded-none h-full px-5">Seasonal</TabsTrigger>
+                </TabsList>
+              </div>
+            </div>
+            
+            <TabsContent value="top-anime" className="mt-0">
+              <TopAnimeSection
+                loading={loading}
+                animeList={animeList}
+                onCardClick={handleCardClick}
+              />
+            </TabsContent>
+            <TabsContent value="seasonal" className="mt-0">
+              <SeasonalAnimeSection onCardClick={handleCardClick} />
+            </TabsContent>
+          </Tabs>
 
           <ImageGallerySection />
         </main>

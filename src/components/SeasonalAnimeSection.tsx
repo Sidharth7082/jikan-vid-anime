@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { fetchSeasonalAnime } from "@/lib/api";
 import SeasonalAnimeCard from "@/components/SeasonalAnimeCard";
@@ -41,7 +40,7 @@ const SeasonalAnimeSection = ({ onCardClick }: SeasonalAnimeSectionProps) => {
   }, [currentSeason]);
 
   return (
-    <div id="seasonal-anime" className="max-w-7xl mx-auto w-full px-3 sm:px-8 pb-10">
+    <div id="seasonal-anime" className="max-w-7xl mx-auto w-full px-3 sm:px-8">
       <div className="flex items-start md:items-center justify-between mt-12 mb-6 flex-col md:flex-row gap-4">
         <div className="flex items-center gap-3">
             <div className="bg-purple-100 p-2 rounded-lg">
