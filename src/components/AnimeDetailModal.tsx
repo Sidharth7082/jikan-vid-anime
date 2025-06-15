@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -50,9 +49,8 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-7xl w-full overflow-y-auto animate-fade-in font-sans bg-gradient-to-br from-[#19191eeb] via-[#101112ea] to-[#18181ebf] shadow-[0_12px_40px_0_rgba(18,16,39,0.94)] border border-[#232324] rounded-2xl p-0
-        backdrop-blur-lg"
-        style={{ minHeight: 600 }}
+      <DialogContent className="max-w-7xl w-full overflow-y-auto animate-fade-in font-sans bg-gradient-to-br from-[#19191eeb] via-[#101112ea] to-[#18181ebf] shadow-[0_12px_40px_0_rgba(18,16,39,0.94)] border border-[#232324] sm:rounded-2xl p-0
+        backdrop-blur-lg md:min-h-[600px] max-h-[95vh]"
       >
         {/* Header */}
         <DialogHeader className="bg-gradient-to-br from-[#1d1c20fc] to-[#17181aeb] rounded-t-2xl p-6 pb-4">
@@ -60,7 +58,7 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
             <Button onClick={() => onOpenChange(false)} variant="ghost" size="icon" aria-label="Back to List">
               <ArrowLeft size={22} />
             </Button>
-            <DialogTitle className="text-3xl font-black mb-1 text-white tracking-tight" style={{letterSpacing: "-1.2px"}}>
+            <DialogTitle className="text-2xl md:text-3xl font-black mb-1 text-white tracking-tight" style={{letterSpacing: "-1.2px"}}>
               {anime.title ?? "Anime"}
             </DialogTitle>
             <span className="flex-1"/>
@@ -73,7 +71,7 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
           {/* Left Column: Episode List */}
           <div className="w-full md:w-[320px] flex-shrink-0">
             <h3 className="text-xl font-bold text-white mb-4 px-1">Episodes</h3>
-            <div className="max-h-[65vh] overflow-y-auto custom-scrollbar pr-2 space-y-2">
+            <div className="space-y-2 md:max-h-[65vh] md:overflow-y-auto custom-scrollbar md:pr-2">
               {Array.from({ length: totalEpisodes || 0 }, (_, i) => i + 1).map((epNum) => (
                   <Button
                     key={epNum}
