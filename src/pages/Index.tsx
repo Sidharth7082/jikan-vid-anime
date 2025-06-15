@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/tabs";
 import AppSidebar from "@/components/AppSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import NekosApiGallery from "@/components/NekosApiGallery";
 
 // Loader overlay for async actions
 const LoaderOverlay = ({ show }: { show: boolean }) =>
@@ -41,8 +42,8 @@ const Index = () => {
   const [waifuName, setWaifuName] = useState<string | undefined>();
   const [waifuLoading, setWaifuLoading] = useState(false);
 
-  // For tracking tabs: "anime" or "gif"
-  const [tab, setTab] = useState<"anime" | "gif">("anime");
+  // For tracking tabs: added "nekos" tab
+  const [tab, setTab] = useState<"anime" | "gif" | "nekos">("anime");
 
   const { token, setToken } = useWaifuApiToken();
 
@@ -160,14 +161,14 @@ const Index = () => {
               <Tabs
                 defaultValue="anime"
                 value={tab}
-                onValueChange={value => setTab(value as "anime" | "gif")}
+                onValueChange={value => setTab(value as "anime" | "gif" | "nekos")}
                 className="w-full max-w-3xl mt-3 sm:mt-2"
               >
                 <TabsList className="flex w-full bg-zinc-900/80 shadow rounded-full p-1">
                   <TabsTrigger
                     value="anime"
                     className={cn(
-                      "transition w-1/2 rounded-full px-0 py-2 text-lg font-medium hover:bg-zinc-900/60 hover:text-white",
+                      "transition w-1/3 rounded-full px-0 py-2 text-lg font-medium hover:bg-zinc-900/60 hover:text-white",
                       tab === "anime"
                         ? "bg-gradient-to-r from-[#e50914] via-red-700 to-pink-600 text-white shadow"
                         : "text-zinc-300"
@@ -178,13 +179,24 @@ const Index = () => {
                   <TabsTrigger
                     value="gif"
                     className={cn(
-                      "transition w-1/2 rounded-full px-0 py-2 text-lg font-medium hover:bg-zinc-900/60 hover:text-white",
+                      "transition w-1/3 rounded-full px-0 py-2 text-lg font-medium hover:bg-zinc-900/60 hover:text-white",
                       tab === "gif"
                         ? "bg-gradient-to-r from-pink-600 via-pink-800 to-[#ae1d25] text-white shadow"
                         : "text-zinc-300"
                     )}
                   >
                     Waifu GIF
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="nekos"
+                    className={cn(
+                      "transition w-1/3 rounded-full px-0 py-2 text-lg font-medium hover:bg-zinc-900/60 hover:text-white",
+                      tab === "nekos"
+                        ? "bg-gradient-to-r from-blue-700 via-blue-900 to-violet-700 text-white shadow"
+                        : "text-zinc-300"
+                    )}
+                  >
+                    NekosAPI Gallery
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="anime" className="w-full">
@@ -219,7 +231,6 @@ const Index = () => {
                             key={anime.mal_id}
                             anime={anime}
                             onClick={() => handleCardClick(anime)}
-                            className="hover:scale-105 hover:drop-shadow-lg transition duration-200"
                           />
                         ))}
                       </section>
@@ -251,6 +262,12 @@ const Index = () => {
                       )}
                     </div>
                   )}
+                </TabsContent>
+                <TabsContent
+                  value="nekos"
+                  className="w-full flex flex-col items-center py-12 min-h-[60vh]"
+                >
+                  <NekosApiGallery />
                 </TabsContent>
               </Tabs>
             </div>
