@@ -3,7 +3,7 @@ import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DanbooruGallery from "@/components/DanbooruGallery";
-import TagSearchInput from "@/components/TagSearchInput";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -32,7 +32,7 @@ const DanbooruPage = () => {
       if (tagsArray.includes(tag)) {
         return prev;
       }
-      return [...tagsArray, tag].join(' ') + ' ';
+      return [...tagsArray, tag].join(' ');
     });
   };
 
@@ -57,10 +57,11 @@ const DanbooruPage = () => {
                     <form onSubmit={handleSearch} className="flex flex-col gap-4">
                       <div>
                         <Label htmlFor="tags-input" className="font-semibold text-zinc-700 mb-2 block">Tags</Label>
-                        <TagSearchInput 
+                        <Input 
                           id="tags-input"
+                          placeholder="e.g. 'genshin_impact long_hair'"
                           value={tags}
-                          onChange={setTags}
+                          onChange={(e) => setTags(e.target.value)}
                         />
                       </div>
 
