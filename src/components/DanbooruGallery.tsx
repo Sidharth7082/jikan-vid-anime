@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,6 +24,14 @@ interface Post {
   tag_string_character: string;
   tag_string_meta: string;
   rating: string;
+  created_at: string;
+  score: number;
+  source: string;
+  image_width: number;
+  image_height: number;
+  file_size: number;
+  fav_count: number;
+  uploader_id: number;
 }
 
 const DanbooruGallery = ({ currentSearch, onTagClick }: { currentSearch: string, onTagClick: (tag: string) => void }) => {

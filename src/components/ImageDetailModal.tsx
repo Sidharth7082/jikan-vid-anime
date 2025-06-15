@@ -6,6 +6,7 @@ import { ExternalLink, Download, Loader2, ArrowLeft, ArrowRight } from 'lucide-r
 import { Button } from './ui/button';
 import { useToast } from './ui/use-toast';
 import axios from 'axios';
+
 interface Post {
   id: number;
   large_file_url: string;
@@ -15,6 +16,14 @@ interface Post {
   tag_string_character: string;
   tag_string_meta: string;
   rating: string;
+  created_at: string;
+  score: number;
+  source: string;
+  image_width: number;
+  image_height: number;
+  file_size: number;
+  fav_count: number;
+  uploader_id: number;
 }
 interface ImageDetailModalProps {
   posts: Post[];
@@ -23,6 +32,7 @@ interface ImageDetailModalProps {
   onOpenChange: (open: boolean) => void;
   onTagClick: (tag: string) => void;
 }
+
 const tagColors: {
   [key: string]: string;
 } = {
@@ -32,6 +42,7 @@ const tagColors: {
   general: 'text-blue-400',
   meta: 'text-yellow-500'
 };
+
 const TagSection = ({
   title,
   tags,
@@ -54,6 +65,57 @@ const TagSection = ({
       </div>
     </div>;
 };
+
+const formatBytes = (bytes: number, decimals = 2) => {
+  if (!+bytes) return '0 Bytes'
+  const k = 1024
+  const dm = decimals < 0 ? 0 : decimals
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
+}
+
+const InformationSection = ({ post }: { post: Post }) => (
+  <div className="mb-6">
+    <h4 className="text-xl font-bold mb-3 capitalize text-zinc-300">Information</h4>
+    <ul className="text-sm space-y-2 text-zinc-400">
+      <li><strong>ID:</strong> {post.id}</li>
+      <li><strong>Date:</strong> {new Date(post.created_at).toLocaleDateString()}</li>
+      <li><strong>Size:</strong> {post.image_width}x{post.image_height} ({formatBytes(post.file_size)})</li>
+      {post.source && <li><strong>Source:</strong> <a href={post.source} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline break-all">{post.source.length > 30 ? post.source.slice(0, 30) + '...' : post.source}</a></li>}
+      <li><strong>Rating:</strong> {post.rating.toUpperCase()}</li>
+      <li><strong>Score:</strong> {post.score}</li>
+      <li><strong>Favorites:</strong> {post.fav_count}</li>
+      <li><strong>Uploader:</strong> {post.uploader_id}</li>
+    </ul>
+  </div>
+);
+
+const OptionsSection = ({ post, onDownload, isDownloading }: { post: Post; onDownload: () => void; isDownloading: boolean }) => (
+  <div className="mb-6">
+    <h4 className="text-xl font-bold mb-3 capitalize text-zinc-300">Options</h4>
+    <div className="flex flex-col items-start gap-1">
+       <Button variant="ghost" onClick={onDownload} disabled={isDownloading} size="sm" className="text-zinc-300 hover:bg-zinc-800 hover:text-white justify-start w-full px-2 h-auto py-1.5">
+           {isDownloading ? <Loader2 size={16} className="animate-spin mr-2" /> : <Download size={16} className="mr-2" />}
+           <span>{isDownloading ? 'Downloading...' : 'Download'}</span>
+       </Button>
+       <Button variant="ghost" size="sm" asChild className="text-zinc-300 hover:bg-zinc-800 hover:text-white justify-start w-full px-2 h-auto py-1.5">
+         <a href={post.large_file_url} target="_blank" rel="noopener noreferrer">
+           <ExternalLink size={16} className="mr-2" />
+           <span>View Original</span>
+         </a>
+       </Button>
+       <Button variant="ghost" size="sm" asChild className="text-zinc-300 hover:bg-zinc-800 hover:text-white justify-start w-full px-2 h-auto py-1.5">
+         <a href={`https://danbooru.donmai.us/posts/${post.id}`} target="_blank" rel="noopener noreferrer">
+           <ExternalLink size={16} className="mr-2" />
+           <span>View on Danbooru</span>
+         </a>
+       </Button>
+    </div>
+  </div>
+);
+
+
 export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
   posts,
   initialIndex,
@@ -133,18 +195,6 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
         <DialogDescription className="sr-only">{post.tag_string_general}</DialogDescription>
         <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] lg:grid-cols-[320px_1fr] h-full">
           <div className="h-full flex flex-col">
-            <div className="p-6 border-b border-zinc-800">
-               <h3 className="text-2xl font-bold mb-4">Post Details</h3>
-               <div className="flex flex-wrap items-center gap-2">
-                 <Button variant="outline" onClick={handleDownload} disabled={isDownloading} size="sm" className="bg-transparent border-zinc-700 hover:bg-zinc-800 hover:text-white">
-                     {isDownloading ? <Loader2 size={16} className="animate-spin mr-2" /> : <Download size={16} className="mr-2" />}
-                     {isDownloading ? 'Downloading...' : 'Download'}
-                 </Button>
-                 <Button variant="outline" size="sm" asChild className="bg-transparent border-zinc-700 hover:bg-zinc-800 hover:text-white">
-                   
-                 </Button>
-               </div>
-            </div>
             <ScrollArea className="h-full">
               <div className="p-6">
                 <TagSection title="Artist" tags={post.tag_string_artist} onTagClick={handleTagClickAndClose} />
@@ -152,6 +202,8 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
                 <TagSection title="Character" tags={post.tag_string_character} onTagClick={handleTagClickAndClose} />
                 <TagSection title="General" tags={post.tag_string_general} onTagClick={handleTagClickAndClose} />
                 <TagSection title="Meta" tags={post.tag_string_meta} onTagClick={handleTagClickAndClose} />
+                <InformationSection post={post} />
+                <OptionsSection post={post} onDownload={handleDownload} isDownloading={isDownloading} />
               </div>
             </ScrollArea>
           </div>
