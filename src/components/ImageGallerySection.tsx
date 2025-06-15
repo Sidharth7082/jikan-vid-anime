@@ -4,7 +4,7 @@ import { Gift } from "lucide-react";
 
 const ImageGallerySection = () => {
     return (
-        <div id="image" className="max-w-7xl mx-auto w-full px-3 sm:px-8 pb-10 pt-8">
+        <div id="image" className="max-w-7xl mx-auto w-full px-3 sm:px-8">
             <div className="flex items-center justify-between mt-12 mb-6">
               <div className="flex items-center gap-3">
                 <Gift className="text-purple-600 w-7 h-7" />

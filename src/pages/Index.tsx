@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from "react";
 import { fetchTopAnime, fetchAnimeDetails } from "@/lib/api";
 import AnimeDetailModal from "@/components/AnimeDetailModal";
@@ -110,7 +109,6 @@ const Index = () => {
             onCardClick={handleCardClick}
           />
 
-          <ImageGallerySection />
         </main>
 
         <AnimeDetailModal
