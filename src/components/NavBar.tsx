@@ -43,14 +43,14 @@ const NavBar = ({ onSearch }: { onSearch: (v: any) => void }) => {
           <Link to="/" className="text-3xl font-extrabold tracking-tight" style={{ color: "#7D36FF" }}>
             captureordie
           </Link>
-          <a href="#" className="font-medium text-zinc-900 rounded-full bg-zinc-100 px-4 py-1.5 shadow transition hover:bg-purple-100 flex items-center gap-2">
+          <Link to="/" className="font-medium text-zinc-900 rounded-full bg-zinc-100 px-4 py-1.5 shadow transition hover:bg-purple-100 flex items-center gap-2">
             <Home className="w-5 h-5" />
             Home
-          </a>
-          <a href="#top-anime" className="hover:underline text-zinc-700 font-medium transition">Top Anime</a>
-          <a href="#seasonal" className="hover:underline text-zinc-700 font-medium transition">Seasonal</a>
-          <a href="#random" className="hover:underline text-zinc-700 font-medium transition">Random</a>
-          <a href="#image" className="hover:underline text-zinc-700 font-medium transition">Image</a>
+          </Link>
+          <a href="/#top-anime" className="hover:underline text-zinc-700 font-medium transition">Top Anime</a>
+          <a href="/#seasonal" className="hover:underline text-zinc-700 font-medium transition">Seasonal</a>
+          <a href="/#random" className="hover:underline text-zinc-700 font-medium transition">Random</a>
+          <a href="/#image" className="hover:underline text-zinc-700 font-medium transition">Image</a>
         </div>
         <div className="flex items-center gap-4">
           <AnimeSearchBar

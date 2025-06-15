@@ -10,7 +10,7 @@ import { toast } from "sonner"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { User, KeyRound, Edit, CheckCircle } from "lucide-react"
+import { User, KeyRound, Edit, CheckCircle, X } from "lucide-react"
 import { AvatarPickerDialog } from "@/components/AvatarPickerDialog"
 import { Session } from "@supabase/supabase-js"
 import NavBar from "@/components/NavBar"
@@ -115,9 +115,14 @@ const ProfilePage = () => {
       <NavBar onSearch={handleSearch} />
       <div className="text-white flex items-center justify-center p-4">
         <div className="w-full max-w-4xl mx-auto">
-          <div className="flex items-center gap-4 mb-8">
-              <User className="w-8 h-8"/>
-              <h1 className="text-3xl font-bold">Edit Profile</h1>
+          <div className="flex items-center justify-between gap-4 mb-8">
+              <div className="flex items-center gap-4">
+                  <User className="w-8 h-8"/>
+                  <h1 className="text-3xl font-bold">Edit Profile</h1>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="text-white hover:bg-gray-700/50">
+                <X className="w-8 h-8" />
+              </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="md:col-span-2">
@@ -132,7 +137,7 @@ const ProfilePage = () => {
                           <FormItem>
                             <FormLabel className="text-white text-xs uppercase">Your Name</FormLabel>
                             <FormControl>
-                              <Input id="fullName" className="bg-[#181520] border-gray-700" {...field} />
+                              <Input id="fullName" className="bg-[#181520] border-gray-700 text-white" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -142,7 +147,7 @@ const ProfilePage = () => {
                       <FormItem>
                         <FormLabel className="text-white text-xs uppercase">Email Address</FormLabel>
                         <div className="flex items-center gap-4">
-                          <Input className="bg-[#181520] border-gray-700" value={user.email} readOnly />
+                          <Input className="bg-[#181520] border-gray-700 text-white" value={user.email} readOnly />
                           {user.email_confirmed_at && (
                             <span className="flex items-center gap-2 text-sm text-pink-400 border border-pink-400 rounded-full px-3 py-1 whitespace-nowrap">
                               <CheckCircle className="w-4 h-4" />
@@ -154,7 +159,7 @@ const ProfilePage = () => {
 
                       <FormItem>
                         <FormLabel className="text-white text-xs uppercase">Joined</FormLabel>
-                        <Input className="bg-[#181520] border-gray-700" value={new Date(user.created_at).toLocaleDateString()} readOnly />
+                        <Input className="bg-[#181520] border-gray-700 text-white" value={new Date(user.created_at).toLocaleDateString()} readOnly />
                       </FormItem>
 
                       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4">
