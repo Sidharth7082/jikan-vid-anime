@@ -1,11 +1,13 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Download, Loader2 } from 'lucide-react';
+import { ExternalLink, Download, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useToast } from './ui/use-toast';
 import axios from 'axios';
+
 interface Post {
   id: number;
   large_file_url: string;
@@ -47,7 +49,7 @@ const TagSection = ({
   return <div className="mb-6">
       <h4 className={`text-xl font-bold mb-3 capitalize ${tagColors[titleKey] || 'text-zinc-300'}`}>{title.replace(/_/g, ' ')}</h4>
       <div className="flex flex-wrap gap-2">
-        {tagArray.map(tag => <Badge key={tag} variant="outline" className="cursor-pointer bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors py-1 px-3" onClick={() => onTagClick(tag)} title={`Add tag: ${tag}`}>
+        {tagArray.map(tag => <Badge key={tag} variant="secondary" className="cursor-pointer rounded-md bg-zinc-700/60 hover:bg-zinc-700/90 text-zinc-300 hover:text-white transition-colors py-1 px-3" onClick={() => onTagClick(tag)} title={`Add tag: ${tag}`}>
             {tag.replace(/_/g, ' ')}
           </Badge>)}
       </div>
@@ -108,10 +110,18 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
           <div className="h-full flex flex-col">
             <div className="p-6 border-b border-zinc-800">
                <h3 className="text-2xl font-bold mb-4">Post Details</h3>
-               <Button variant="link" onClick={handleDownload} disabled={isDownloading} className="p-0 h-auto text-zinc-300 hover:text-white flex items-center gap-2 hover:no-underline">
-                 {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-                 <span>{isDownloading ? 'Downloading...' : 'Download'}</span>
-               </Button>
+               <div className="flex items-center flex-wrap gap-4">
+                  <Button variant="link" asChild className="p-0 h-auto text-zinc-300 hover:text-white flex items-center gap-2 hover:no-underline">
+                    <a href={`https://danbooru.donmai.us/posts/${post.id}`} target="_blank" rel="noopener noreferrer">
+                      View on Danbooru
+                      <ExternalLink size={16} />
+                    </a>
+                  </Button>
+                  <Button variant="outline" onClick={handleDownload} disabled={isDownloading} size="sm" className="bg-transparent border-zinc-700 hover:bg-zinc-800 hover:text-white">
+                      {isDownloading ? <Loader2 size={16} className="animate-spin mr-2" /> : <Download size={16} className="mr-2" />}
+                      {isDownloading ? 'Downloading...' : 'Download'}
+                  </Button>
+               </div>
             </div>
             <ScrollArea className="h-full">
               <div className="p-6">
