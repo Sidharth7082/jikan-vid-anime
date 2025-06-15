@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,8 +8,10 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Download, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
+import { useToast } from './ui/use-toast';
+import axios from 'axios';
 
 interface Post {
   id: number;
@@ -55,7 +57,46 @@ const TagSection = ({ title, tags, onTagClick }: { title: string, tags: string, 
 };
 
 export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, open, onOpenChange, onTagClick }) => {
+  const [isDownloading, setIsDownloading] = useState(false);
+  const { toast } = useToast();
+
   if (!post) return null;
+
+  const handleDownload = async () => {
+    if (!post.large_file_url) {
+        toast({
+            title: "Download failed",
+            description: "No high-resolution image available for this post.",
+            variant: "destructive",
+        });
+        return;
+    }
+    setIsDownloading(true);
+    try {
+        const response = await axios.get(post.large_file_url, {
+            responseType: 'blob'
+        });
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        const fileExtension = post.large_file_url.split('.').pop() || 'jpg';
+        link.setAttribute('download', `danbooru_${post.id}.${fileExtension}`);
+        document.body.appendChild(link);
+        link.click();
+        
+        link.parentNode?.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error("Download error:", error);
+        toast({
+            title: "Download failed",
+            description: "Could not download the image. Please try again later.",
+            variant: "destructive",
+        });
+    } finally {
+        setIsDownloading(false);
+    }
+  };
 
   const handleTagClickAndClose = (tag: string) => {
     onTagClick(tag);
@@ -84,11 +125,21 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, open, 
                   <h4 className="text-sm font-semibold text-zinc-500 mb-2">Information</h4>
                   <p className="text-sm font-mono bg-zinc-100 px-2 py-1 rounded-md inline-block">ID: {post.id}</p>
                   <p className="text-sm mt-2">Rating: <Badge variant={post.rating === 's' ? 'default' : post.rating === 'q' ? 'secondary' : 'destructive'}>{post.rating === 's' ? 'Safe' : post.rating === 'q' ? 'Questionable' : 'Explicit'}</Badge></p>
-                  <Button variant="link" asChild className="p-0 h-auto mt-2 text-sm">
-                    <a href={`https://danbooru.donmai.us/posts/${post.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
-                      View on Danbooru <ExternalLink size={14} />
-                    </a>
-                  </Button>
+                  <div className="flex items-center gap-4 mt-2">
+                    <Button variant="link" asChild className="p-0 h-auto text-sm">
+                      <a href={`https://danbooru.donmai.us/posts/${post.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
+                        View on Danbooru <ExternalLink size={14} />
+                      </a>
+                    </Button>
+                    <Button variant="link" onClick={handleDownload} disabled={isDownloading} className="p-0 h-auto text-sm flex items-center gap-1 text-primary">
+                      {isDownloading ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : (
+                        <Download size={14} />
+                      )}
+                      {isDownloading ? 'Downloading...' : 'Download'}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </ScrollArea>
