@@ -207,7 +207,7 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
               </div>
             </ScrollArea>
           </div>
-          <div className="relative h-full bg-black flex items-center justify-center">
+          <div className="relative h-full bg-black flex items-center justify-center p-4">
              {posts.length > 1 && <>
                 <Button onClick={handlePrev} variant="ghost" size="icon" className="absolute left-2 top-1/2 -translate-y-1/2 z-20 h-16 w-16 text-white/50 hover:text-white hover:bg-black/20 rounded-full">
                   <ArrowLeft size={32} />
@@ -218,11 +218,9 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
                   <span className="sr-only">Next Image</span>
                 </Button>
               </>}
-            <ScrollArea className="h-full w-full">
-              <div className="flex min-h-full items-center justify-center p-4">
-                {post.large_file_url ? <img src={post.large_file_url} alt={post.tag_string_general} className="max-w-full max-h-[96vh] object-contain transition-opacity duration-300" key={post.id} /> : <div className="text-white">Image not available</div>}
-              </div>
-            </ScrollArea>
+            
+            {post.large_file_url ? <img src={post.large_file_url} alt={post.tag_string_general} className="max-w-full max-h-[96vh] object-contain transition-opacity duration-300" key={post.id} /> : <div className="text-white">Image not available</div>}
+            
              {posts.length > 1 && <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-sm px-3 py-1 rounded-full z-10">
                     {currentIndex + 1} / {posts.length}
                 </div>}
