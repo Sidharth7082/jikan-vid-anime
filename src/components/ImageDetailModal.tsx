@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ExternalLink, Download, Loader2 } from 'lucide-react';
@@ -11,7 +10,6 @@ import axios from 'axios';
 interface Post {
   id: number;
   large_file_url: string;
-  file_url: string;
   tag_string_general: string;
   tag_string_artist: string;
   tag_string_copyright: string;
@@ -67,11 +65,8 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
     toast
   } = useToast();
   if (!post) return null;
-
-  const imageUrl = post.file_url || post.large_file_url;
-
   const handleDownload = async () => {
-    if (!imageUrl) {
+    if (!post.large_file_url) {
       toast({
         title: "Download failed",
         description: "No high-resolution image available for this post.",
@@ -81,13 +76,13 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
     }
     setIsDownloading(true);
     try {
-      const response = await axios.get(imageUrl, {
+      const response = await axios.get(post.large_file_url, {
         responseType: 'blob'
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      const fileExtension = imageUrl.split('.').pop()?.split('?')[0] || 'jpg';
+      const fileExtension = post.large_file_url.split('.').pop() || 'jpg';
       link.setAttribute('download', `danbooru_${post.id}.${fileExtension}`);
       document.body.appendChild(link);
       link.click();
@@ -110,8 +105,6 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
   };
   return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-screen-2xl w-[98vw] h-[98vh] p-0 gap-0 bg-zinc-900 border-zinc-800 text-zinc-50 overflow-hidden">
-        <DialogTitle className="sr-only">Image Detail for Post {post.id}</DialogTitle>
-        <DialogDescription className="sr-only">Detailed view of a Danbooru image with tags and options.</DialogDescription>
         <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] lg:grid-cols-[320px_1fr] h-full">
           <div className="h-full flex flex-col">
             <div className="p-6 border-b border-zinc-800">
@@ -134,9 +127,9 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
           <div className="h-full bg-black">
             <ScrollArea className="h-full w-full">
               <div className="flex min-h-full items-center justify-center p-4">
-                {imageUrl ? (
+                {post.large_file_url ? (
                   <img
-                    src={imageUrl}
+                    src={post.large_file_url}
                     alt={post.tag_string_general}
                     className="max-w-none"
                   />
