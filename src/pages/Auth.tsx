@@ -18,11 +18,16 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AtSign, Lock } from "lucide-react";
+import { AtSign, Lock, User } from "lucide-react";
 
 const authSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+  username: z.string().optional(),
+});
+
+const signUpSchema = authSchema.extend({
+  username: z.string().min(3, { message: "Username must be at least 3 characters." }),
 });
 
 const AuthPage = () => {
@@ -46,6 +51,7 @@ const AuthPage = () => {
     defaultValues: {
       email: "",
       password: "",
+      username: "",
     },
   });
 
@@ -69,11 +75,26 @@ const AuthPage = () => {
   };
 
   const handleSignUp = async (values: z.infer<typeof authSchema>) => {
+    const result = signUpSchema.safeParse(values);
+    if (!result.success) {
+      form.clearErrors();
+      result.error.issues.forEach((issue) => {
+        form.setError(issue.path[0] as "email" | "password" | "username", {
+          type: "manual",
+          message: issue.message,
+        });
+      });
+      return;
+    }
+
     setLoading(true);
     const { error } = await supabase.auth.signUp({
-      email: values.email,
-      password: values.password,
+      email: result.data.email,
+      password: result.data.password,
       options: {
+        data: {
+          username: result.data.username,
+        },
         emailRedirectTo: `${window.location.origin}/`,
       },
     });
@@ -95,6 +116,24 @@ const AuthPage = () => {
   const AuthForm = ({ isSignUp }: { isSignUp?: boolean }) => (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(isSignUp ? handleSignUp : handleSignIn)} className="space-y-6">
+        {isSignUp && (
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Username</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="your_username" {...field} className="pl-10" />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         <FormField
           control={form.control}
           name="email"
