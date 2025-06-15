@@ -2,10 +2,9 @@ import React, { useEffect, useState, useCallback } from "react";
 import { fetchTopAnime, fetchAnimeDetails } from "@/lib/api";
 import AnimeCard from "@/components/AnimeCard";
 import AnimeDetailModal from "@/components/AnimeDetailModal";
-import AnimeSearchBar from "@/components/AnimeSearchBar";
 import { toast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Home, Star, Search, Smile } from "lucide-react";
+import { Star, Smile } from "lucide-react";
 import { cn } from "@/lib/utils";
 import WaifuGifModal from "@/components/WaifuGifModal";
 import { useWaifuApiToken } from "@/hooks/useWaifuApiToken";
@@ -13,8 +12,8 @@ import axios from "axios";
 import { Button } from "@/components/ui/button";
 import AppSidebar from "@/components/AppSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import NekosApiGallery from "@/components/NekosApiGallery";
 import WaifuPicsGallery from "@/components/WaifuPicsGallery";
+import NavBar from "@/components/NavBar";
 
 // Loader overlay for async actions
 const LoaderOverlay = ({ show }: { show: boolean }) =>
@@ -23,35 +22,6 @@ const LoaderOverlay = ({ show }: { show: boolean }) =>
       <span className="w-16 h-16 rounded-full border-4 border-[#e50914] border-t-white animate-spin block" />
     </div>
   ) : null;
-
-// Navbar Component (inline - could move to its own file for clarity)
-const NavBar = ({ onSearch }: { onSearch: (v: any) => void }) => (
-  <nav className="sticky top-0 z-30 w-full bg-white/80 backdrop-blur border-b border-zinc-200 shadow-md">
-    <div className="max-w-7xl mx-auto flex justify-between items-center gap-4 py-2 px-5">
-      <div className="flex items-center gap-6">
-        <span className="text-3xl font-extrabold tracking-tight" style={{ color: "#7D36FF" }}>
-          captureordie
-        </span>
-        <a href="#" className="font-medium text-zinc-900 rounded-full bg-zinc-100 px-4 py-1.5 shadow transition hover:bg-purple-100 flex items-center gap-2">
-          <Home className="w-5 h-5" />
-          Home
-        </a>
-        <a href="#top-anime" className="hover:underline text-zinc-700 font-medium transition">Top Anime</a>
-        <a href="#seasonal" className="hover:underline text-zinc-700 font-medium transition">Seasonal</a>
-        <a href="#random" className="hover:underline text-zinc-700 font-medium transition">Random</a>
-        <a href="#image" className="hover:underline text-zinc-700 font-medium transition">Image</a>
-      </div>
-      <div className="flex items-center gap-2">
-        <AnimeSearchBar
-          onSelect={onSearch}
-          className="max-w-none w-auto mb-0"
-          wrapperClass="!bg-zinc-100 !border-zinc-300 !rounded-full w-60"
-          placeholder="Search anime..."
-        />
-      </div>
-    </div>
-  </nav>
-);
 
 const Index = () => {
   const [animeList, setAnimeList] = useState<any[]>([]);
