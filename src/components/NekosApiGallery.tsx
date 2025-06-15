@@ -40,7 +40,7 @@ const tagsPresets = [
   ["long_hair"],
 ];
 
-type ImageProvider = "nekosapi" | "nekosbest";
+type ImageProvider = "nekosapi" | "nekosbest" | "danbooru";
 
 interface NekosBestCategory {
   format: "png" | "gif";
@@ -88,6 +88,10 @@ export default function NekosApiGallery() {
   const [nekosBestAmount, setNekosBestAmount] = useState(6);
   const [nekosBestLoading, setNekosBestLoading] = useState(false);
 
+  // --- Danbooru new states ---
+  const [danbooruTags, setDanbooruTags] = useState<string[]>([]);
+  const [danbooruPage, setDanbooruPage] = useState(1);
+
   // --- UI provider switch ---
   useEffect(() => {
     // On switching provider, clear results/lists
@@ -104,6 +108,15 @@ export default function NekosApiGallery() {
     }
     // eslint-disable-next-line
   }, [provider]);
+  
+  // --- Danbooru logic ---
+  useEffect(() => {
+    if (provider === "danbooru") {
+      fetchDanbooruPosts(1);
+    }
+    // eslint-disable-next-line
+  }, [provider]);
+
 
   // Unified load function for /images and /images/random
   const fetchImages = async (useRandom = false) => {
@@ -129,12 +142,70 @@ export default function NekosApiGallery() {
     setLoading(false);
   };
 
+  // Danbooru fetch function
+  const fetchDanbooruPosts = async (page = 1) => {
+    setLoading(true);
+    setImages([]);
+    const DANBOORU_API_KEY = "68dypdaxX8QEP4ycshpMdPbN";
+    const DANBOORU_LOGIN = "capture04";
+    const limit = 12;
+
+    const ratingMap: { [key: string]: string } = {
+      safe: "g",
+      suggestive: "s",
+      borderline: "q",
+      explicit: "e",
+    };
+    const selectedDanbooruRatings = selectedRatings.map(r => `rating:${ratingMap[r]}`).filter(Boolean);
+
+    const tags = [...danbooruTags, ...selectedDanbooruRatings].join(' ');
+
+    try {
+        const res = await fetch(`https://danbooru.donmai.us/posts.json?login=${DANBOORU_LOGIN}&api_key=${DANBOORU_API_KEY}&tags=${encodeURIComponent(tags)}&page=${page}&limit=${limit}`);
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({ message: "Failed to fetch from Danbooru" }));
+            throw new Error(errorData.message || "Failed to fetch from Danbooru");
+        }
+        const data = await res.json();
+        
+        if (!Array.isArray(data)) {
+          console.error("Danbooru API error:", data.message);
+          throw new Error(data.message || "Failed to fetch from Danbooru");
+        }
+
+        const mappedImages: NekosImage[] = data.map((post: any) => ({
+            id: post.id.toString(),
+            url: post.large_file_url || post.file_url,
+            file_url: post.large_file_url || post.file_url,
+            rating: Object.keys(ratingMap).find(key => ratingMap[key] === post.rating) || 'safe',
+            width: post.image_width,
+            height: post.image_height,
+            tags: post.tag_string.split(" ").map((name: string) => ({ name })),
+        })).filter((img: NekosImage) => img.file_url);
+
+        setImages(mappedImages);
+        setDanbooruPage(page);
+    } catch(err) {
+        console.error(err);
+        setImages([]);
+    } finally {
+        setLoading(false);
+    }
+  }
+
   // Tag input handler (comma-separated)
   const handleTagInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.trim();
     if (!val) setTags([]);
     else setTags(val.split(",").map((t) => t.trim()).filter(Boolean));
   };
+
+  const handleDanbooruTagInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.trim();
+    if (!val) setDanbooruTags([]);
+    else setDanbooruTags(val.split(",").map((t) => t.trim().replace(/ /g, "_")).filter(Boolean));
+  };
+
 
   // Helper to toggle rating
   const toggleRating = (r: string) => {
@@ -232,6 +303,16 @@ export default function NekosApiGallery() {
             size="sm"
           >
             <ImagesIcon className="w-4 h-4 mr-1" />nekos.best
+          </Button>
+          <Button
+            variant={provider === "danbooru" ? "default" : "secondary"}
+            className={provider === "danbooru"
+              ? "bg-gradient-to-r from-green-600 to-teal-500 text-white font-semibold"
+              : ""}
+            onClick={() => setProvider("danbooru")}
+            size="sm"
+          >
+            <ImagesIcon className="w-4 h-4 mr-1" />Danbooru
           </Button>
         </div>
         <div className="hidden md:block text-xs text-zinc-400 pr-2">Switch to your favorite SFW anime image & GIF provider</div>
@@ -363,6 +444,108 @@ export default function NekosApiGallery() {
               variant="secondary"
               onClick={() => setOffset((o) => o + limit)}
               disabled={loading || usingRandom}
+            >
+              Next
+            </Button>
+          </div>
+        </>
+      )}
+      
+      {/* Danbooru branch */}
+      {provider === "danbooru" && (
+        <>
+          <section className="mb-4 flex flex-col md:flex-row gap-3 items-center justify-between">
+            <div className="flex flex-wrap gap-2 items-center">
+              <label className="text-sm text-zinc-400 font-medium pr-1">Ratings:</label>
+              {RATINGS.map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  className={`px-2 py-[2px] rounded text-xs border ${
+                    selectedRatings.includes(r)
+                      ? "bg-gradient-to-r from-green-700 via-blue-700 to-green-900 text-white shadow"
+                      : "bg-transparent border-zinc-600 text-zinc-300 hover:bg-zinc-800/50"
+                    } transition font-semibold`}
+                  onClick={() => toggleRating(r)}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-2 items-center mt-2 md:mt-0">
+              <label className="text-sm text-zinc-400 font-medium pr-1">Tags:</label>
+              <input
+                type="text"
+                className="rounded border border-zinc-600 bg-black/60 px-2 py-1 text-xs text-white w-48 focus:outline-none focus:ring-2 focus:ring-blue-500/80"
+                placeholder="comma,separated,tags"
+                onChange={handleDanbooruTagInput}
+                value={danbooruTags.join(",")}
+                aria-label="tags (comma-separated)"
+                onKeyUp={e => { if (e.key === "Enter") fetchDanbooruPosts(1); }}
+              />
+            </div>
+            <div className="flex gap-2 mt-2 md:mt-0">
+              <Button
+                size="sm"
+                className="bg-gradient-to-r from-green-700 to-blue-500 text-white"
+                onClick={() => fetchDanbooruPosts(1)}
+                disabled={loading}
+              >
+                <Search className="w-4 h-4 mr-1" />Search Images
+              </Button>
+            </div>
+          </section>
+          <div className="w-full mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+            {loading
+              ? [...Array(12)].map((_, idx) => (
+                  <Skeleton key={idx} className="aspect-square w-full rounded-xl bg-gradient-to-b from-zinc-900/90 to-zinc-800/80" />
+                ))
+              : images.length === 0
+                ? <div className="col-span-full text-zinc-400 text-center p-10">No images found.</div>
+                : images.map(img => (
+                    <div
+                      key={img.id}
+                      className="rounded-xl overflow-hidden shadow-lg border border-zinc-700 group bg-zinc-900/80 hover:scale-105 transition-transform flex flex-col items-center"
+                    >
+                      <img
+                        src={img.file_url}
+                        alt={img.tags?.map(t => t.name).join(", ") || "danbooru image"}
+                        className="w-full aspect-square object-cover"
+                        style={{
+                          background: "#222",
+                          minHeight: 160,
+                          maxHeight: 320,
+                        }}
+                      />
+                      <div className="px-3 py-2 text-xs text-zinc-300 w-full flex flex-wrap gap-2">
+                        {img.tags?.slice(0, 4).map(tag => (
+                          <span
+                            key={tag.name}
+                            className="rounded bg-zinc-800/80 px-2 py-0.5 text-teal-300 font-medium"
+                          >
+                            {tag.name}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="text-[10px] text-zinc-500 w-full pl-3 pb-2">Rating: {img.rating}</div>
+                    </div>
+                  ))}
+          </div>
+          <div className="flex w-full justify-center items-center gap-4 mt-8">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => fetchDanbooruPosts(Math.max(1, danbooruPage - 1))}
+              disabled={loading || danbooruPage === 1}
+            >
+              Prev
+            </Button>
+            <span className="text-xs text-zinc-400">Page: {danbooruPage}</span>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => fetchDanbooruPosts(danbooruPage + 1)}
+              disabled={loading || images.length < 12}
             >
               Next
             </Button>
