@@ -12,8 +12,8 @@ import RandomTags from "@/components/RandomTags";
 
 const DanbooruPage = () => {
   const [tags, setTags] = useState("");
-  const [rating, setRating] = useState("all");
-  const [currentSearch, setCurrentSearch] = useState("");
+  const [rating, setRating] = useState("sfw");
+  const [currentSearch, setCurrentSearch] = useState("rating:safe");
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -27,12 +27,18 @@ const DanbooruPage = () => {
   };
 
   const handleTagClick = (tag: string) => {
-    setTags(prev => (prev ? `${prev} ${tag}` : tag).trim());
+    setTags(prev => {
+      const tagsArray = prev.split(' ').filter(Boolean);
+      if (tagsArray.includes(tag)) {
+        return prev;
+      }
+      return [...tagsArray, tag].join(' ');
+    });
   };
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex flex-col w-full bg-gradient-to-br from-[#e0e0ff]/60 via-[#f8f4fa]/60 to-[#faf6fb]/90">
+      <div className="min-h-screen flex flex-col w-full bg-gradient-to-br from-[#e0eff]/60 via-[#f8f4fa]/60 to-[#faf6fb]/90">
         <NavBar onSearch={() => {}} />
 
         {/* Main Content */}
@@ -88,7 +94,7 @@ const DanbooruPage = () => {
 
               {/* Right Content */}
               <div className="p-4 border border-zinc-200/80 rounded-2xl bg-white/60 shadow-lg backdrop-blur-sm">
-                <DanbooruGallery currentSearch={currentSearch} />
+                <DanbooruGallery currentSearch={currentSearch} onTagClick={handleTagClick} />
               </div>
             </div>
           </div>
