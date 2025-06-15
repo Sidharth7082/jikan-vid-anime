@@ -21,12 +21,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AtSign, Lock, User } from "lucide-react";
 
 const authSchema = z.object({
-  email: z.string().email({ message: "Invalid email address." }),
+  email: z.string().min(1, { message: "Email or username is required." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
   username: z.string().optional(),
 });
 
 const signUpSchema = authSchema.extend({
+  email: z.string().email({ message: "Invalid email address." }),
   username: z.string().min(3, { message: "Username must be at least 3 characters." }),
 });
 
@@ -57,8 +58,39 @@ const AuthPage = () => {
 
   const handleSignIn = async (values: z.infer<typeof authSchema>) => {
     setLoading(true);
+    const isEmail = values.email.includes('@');
+    let emailToSignIn = values.email;
+
+    if (!isEmail) {
+      // It's a username, let's get the email from our edge function
+      try {
+        const { data, error: invokeError } = await supabase.functions.invoke('get-email-from-username', {
+          body: { username: values.email },
+        });
+
+        if (invokeError) {
+            console.error('Edge function invocation error:', invokeError);
+            throw new Error("Invalid credentials");
+        }
+        
+        if (!data || !data.email) {
+            throw new Error("Invalid credentials");
+        }
+        
+        emailToSignIn = data.email;
+      } catch (e) {
+          toast({
+            title: "Sign-in failed",
+            description: "Invalid username or password.", // Generic error
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+      }
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
-      email: values.email,
+      email: emailToSignIn,
       password: values.password,
     });
     if (error) {
@@ -113,6 +145,22 @@ const AuthPage = () => {
     setLoading(false);
   };
 
+  const handleGuestLogin = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.signInAnonymously();
+    if (error) {
+      toast({
+        title: "Guest login failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({ title: "Signed in as guest!" });
+      navigate("/");
+    }
+    setLoading(false);
+  };
+
   const AuthForm = ({ isSignUp }: { isSignUp?: boolean }) => (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(isSignUp ? handleSignUp : handleSignIn)} className="space-y-6">
@@ -139,11 +187,11 @@ const AuthPage = () => {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>{isSignUp ? "Email" : "Email or Username"}</FormLabel>
               <FormControl>
                 <div className="relative">
                   <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="your@email.com" {...field} className="pl-10" />
+                  <Input placeholder={isSignUp ? "your@email.com" : "email or username"} {...field} className="pl-10" />
                 </div>
               </FormControl>
               <FormMessage />
@@ -194,6 +242,19 @@ const AuthPage = () => {
               <AuthForm isSignUp />
             </TabsContent>
           </Tabs>
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">
+                Or
+              </span>
+            </div>
+          </div>
+          <Button variant="outline" onClick={handleGuestLogin} disabled={loading} className="w-full">
+            Continue as Guest
+          </Button>
         </CardContent>
       </Card>
     </div>
