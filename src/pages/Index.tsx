@@ -9,6 +9,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import HeroBanner from "@/components/HeroBanner";
 import TopAnimeSection from "@/components/TopAnimeSection";
 import ImageGallerySection from "@/components/ImageGallerySection";
+import SeasonalAnimeSection from "@/components/SeasonalAnimeSection";
 
 // Loader overlay for async actions
 const LoaderOverlay = ({ show }: { show: boolean }) =>
@@ -108,6 +109,8 @@ const Index = () => {
             animeList={animeList}
             onCardClick={handleCardClick}
           />
+
+          <SeasonalAnimeSection onCardClick={handleCardClick} />
 
           <ImageGallerySection />
         </main>
