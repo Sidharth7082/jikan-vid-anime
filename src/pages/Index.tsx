@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from "react";
 import { fetchTopAnime, fetchAnimeDetails } from "@/lib/api";
 import AnimeCard from "@/components/AnimeCard";
@@ -30,7 +29,7 @@ const NavBar = ({ onSearch }: { onSearch: (v: any) => void }) => (
     <div className="max-w-7xl mx-auto flex justify-between items-center gap-4 py-2 px-5">
       <div className="flex items-center gap-6">
         <span className="text-3xl font-extrabold tracking-tight" style={{ color: "#7D36FF" }}>
-          CaptureExplorer
+          captureordie
         </span>
         <a href="#" className="font-medium text-zinc-900 rounded-full bg-zinc-100 px-4 py-1.5 shadow transition hover:bg-purple-100 flex items-center gap-2">
           <Home className="w-5 h-5" />
@@ -224,7 +223,7 @@ const Index = () => {
         {/* Footer */}
         <footer className="w-full py-8 text-center text-neutral-500 text-sm bg-gradient-to-t from-[#e5e0ff99] via-transparent to-transparent backdrop-blur-lg shadow-inner mt-auto">
           <span className="font-bold tracking-wide text-[#7D36FF] drop-shadow mx-1">
-            CaptureExplorer
+            captureordie
           </span>
           — Powered by{" "}
           <a
