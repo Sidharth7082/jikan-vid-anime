@@ -25,26 +25,58 @@ export const GifDetailModal: React.FC<GifDetailModalProps> = ({ gif, open, onOpe
   if (!gif) return null;
 
   const handleDownload = async () => {
+    if (!gif) return;
     setIsDownloading(true);
+
+    const fileExtension = gif.url.split('.').pop()?.split('?')[0] || 'gif';
+    const baseName = gif.animeName ? gif.animeName.replace(/\s/g, '_') : `gif_${Date.now()}`;
+    const sanitizedFileName = baseName.replace(/[<>:"/\\|?*]/g, '');
+    const fileName = `${sanitizedFileName}.${fileExtension}`;
+
     try {
+      // Attempt 1: Fetch as a blob. This works for servers with permissive CORS.
       const response = await axios.get(gif.url, { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      const fileExtension = gif.url.split('.').pop() || 'gif';
-      const fileName = gif.animeName ? `${gif.animeName.replace(/\s/g, '_')}.${fileExtension}` : `gif_${Date.now()}.${fileExtension}`;
       link.setAttribute('download', fileName);
       document.body.appendChild(link);
       link.click();
+
+      toast({
+        title: "Download Started",
+        description: "Your GIF is downloading.",
+      });
+
+      // Cleanup
       link.parentNode?.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Download error:", error);
-      toast({
-        title: "Download failed",
-        description: "Could not download the GIF.",
-        variant: "destructive",
-      });
+      console.error("Blob download failed, attempting fallback:", error);
+      // Fallback: For CORS errors, trigger a download by opening the link.
+      try {
+        const link = document.createElement('a');
+        link.href = gif.url;
+        link.setAttribute('download', fileName);
+        link.setAttribute('target', '_blank');
+        link.setAttribute('rel', 'noopener noreferrer');
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        toast({
+          title: "Redirecting for download",
+          description: "Your GIF should open in a new tab to save.",
+        });
+      } catch (fallbackError) {
+        console.error("Fallback download failed:", fallbackError);
+        toast({
+          title: "Download Failed",
+          description: "You can try right-clicking the GIF to save it.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsDownloading(false);
     }
