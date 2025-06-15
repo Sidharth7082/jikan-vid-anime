@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { RefreshCw, Dices } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 const OtakuGifsGallery = () => {
   const [reactions, setReactions] = useState<string[]>([]);
@@ -87,14 +86,6 @@ const OtakuGifsGallery = () => {
     fetchGif(selectedReaction);
   };
 
-  const handleGetRandomGif = useCallback(() => {
-    if (reactions.length > 0) {
-      const randomReaction =
-        reactions[Math.floor(Math.random() * reactions.length)];
-      setSelectedReaction(randomReaction);
-    }
-  }, [reactions]);
-
   return (
     <div className="flex flex-col items-center gap-6 p-4 border border-zinc-200/80 rounded-2xl bg-white/60 shadow-lg backdrop-blur-sm">
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-2xl">
@@ -127,15 +118,6 @@ const OtakuGifsGallery = () => {
           >
             <RefreshCw className="w-4 h-4 mr-2" />
             New
-          </Button>
-          <Button
-            onClick={handleGetRandomGif}
-            disabled={loading || loadingReactions || reactions.length === 0}
-            variant="outline"
-            className="w-full sm:w-auto"
-          >
-            <Dices className="w-4 h-4 mr-2" />
-            Random
           </Button>
         </div>
       </div>
