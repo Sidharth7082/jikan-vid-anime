@@ -98,11 +98,11 @@ const SettingsPage = () => {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-[#181520] text-gray-300">
       <NavBar onSearch={handleSearch} />
       <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
         <div className="flex items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 text-white">
             <SettingsIcon className="w-8 h-8" />
             <h1 className="text-3xl font-bold">Settings</h1>
           </div>
@@ -110,7 +110,7 @@ const SettingsPage = () => {
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="hover:bg-accent"
+            className="text-white hover:bg-gray-700/50"
           >
             <X className="w-8 h-8" />
           </Button>
@@ -186,7 +186,7 @@ const SettingsPage = () => {
               <SettingItem>
                 <div>
                   <SettingLabel>Play Original Audio</SettingLabel>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-gray-400">
                     If enabled, the player will play original audio by default.
                   </p>
                 </div>
@@ -266,7 +266,7 @@ const SettingsPage = () => {
                 />
               </SettingItem>
 
-              <div className="space-y-2 pt-4 border-t border-border">
+              <div className="space-y-2 pt-4 border-t border-gray-800">
                 <SettingLabel>Notification ignore folders</SettingLabel>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 pt-2">
                   {ignoreFolders.map((item) => (
@@ -282,7 +282,7 @@ const SettingsPage = () => {
                               onCheckedChange={field.onChange}
                             />
                           </FormControl>
-                          <FormLabel className="font-normal text-muted-foreground">
+                          <FormLabel className="font-normal text-gray-300">
                             {item.label}
                           </FormLabel>
                         </FormItem>
@@ -346,13 +346,13 @@ const SettingsPage = () => {
 };
 
 const SettingItem = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex items-center justify-between border-b border-border py-4">
+  <div className="flex items-center justify-between border-b border-gray-800 py-4">
     {children}
   </div>
 );
 
 const SettingLabel = ({ children }: { children: React.ReactNode }) => (
-  <p className="text-base font-medium">{children}</p>
+  <p className="text-base font-medium text-white">{children}</p>
 );
 
 export default SettingsPage;
