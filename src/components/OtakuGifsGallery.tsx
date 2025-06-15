@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Dices } from "lucide-react";
 
 const OtakuGifsGallery = () => {
   const [reactions, setReactions] = useState<string[]>([]);
@@ -87,36 +87,57 @@ const OtakuGifsGallery = () => {
     fetchGif(selectedReaction);
   };
 
+  const handleGetRandomGif = useCallback(() => {
+    if (reactions.length > 0) {
+      const randomReaction =
+        reactions[Math.floor(Math.random() * reactions.length)];
+      setSelectedReaction(randomReaction);
+    }
+  }, [reactions]);
+
   return (
     <div className="flex flex-col items-center gap-6 p-4 border border-zinc-200/80 rounded-2xl bg-white/60 shadow-lg backdrop-blur-sm">
-      <div className="flex flex-col sm:flex-row items-center gap-4 w-full max-w-lg">
-        <h3 className="text-lg font-semibold text-zinc-800 shrink-0">
-          Select a GIF reaction:
-        </h3>
-        {loadingReactions ? (
-          <Skeleton className="h-10 w-full sm:w-48" />
-        ) : (
-          <Select onValueChange={setSelectedReaction} value={selectedReaction}>
-            <SelectTrigger className="w-full sm:w-48">
-              <SelectValue placeholder="Select reaction" />
-            </SelectTrigger>
-            <SelectContent>
-              {reactions.map((reaction) => (
-                <SelectItem key={reaction} value={reaction}>
-                  {reaction.charAt(0).toUpperCase() + reaction.slice(1)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-        <Button
-          onClick={handleGetNewGif}
-          disabled={loading || !selectedReaction}
-          className="w-full sm:w-auto"
-        >
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Get New GIF
-        </Button>
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-2xl">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <h3 className="text-lg font-semibold text-zinc-800 shrink-0">
+            Reaction:
+          </h3>
+          {loadingReactions ? (
+            <Skeleton className="h-10 w-full flex-1" />
+          ) : (
+            <Select onValueChange={setSelectedReaction} value={selectedReaction}>
+              <SelectTrigger className="w-full flex-1 sm:w-48">
+                <SelectValue placeholder="Select reaction" />
+              </SelectTrigger>
+              <SelectContent>
+                {reactions.map((reaction) => (
+                  <SelectItem key={reaction} value={reaction}>
+                    {reaction.charAt(0).toUpperCase() + reaction.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Button
+            onClick={handleGetNewGif}
+            disabled={loading || !selectedReaction}
+            className="w-full sm:w-auto"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            New
+          </Button>
+          <Button
+            onClick={handleGetRandomGif}
+            disabled={loading || loadingReactions || reactions.length === 0}
+            variant="outline"
+            className="w-full sm:w-auto"
+          >
+            <Dices className="w-4 h-4 mr-2" />
+            Random
+          </Button>
+        </div>
       </div>
       <div className="w-full max-w-lg h-80 flex items-center justify-center bg-black/5 rounded-lg overflow-hidden border">
         {loading ? (
@@ -129,7 +150,9 @@ const OtakuGifsGallery = () => {
           />
         ) : (
           <div className="text-zinc-500 p-4 text-center">
-            {loadingReactions ? "Loading reactions..." : "Select a reaction to see a GIF."}
+            {loadingReactions
+              ? "Loading reactions..."
+              : "Select a reaction to see a GIF."}
           </div>
         )}
       </div>

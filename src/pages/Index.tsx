@@ -109,6 +109,7 @@ const Index = () => {
             onCardClick={handleCardClick}
           />
 
+          <ImageGallerySection />
         </main>
 
         <AnimeDetailModal
