@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from "react";
 import { fetchTopAnime, fetchAnimeDetails } from "@/lib/api";
 import AnimeDetailModal from "@/components/AnimeDetailModal";
@@ -29,6 +28,7 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [featuredAnime, setFeaturedAnime] = useState<any | null>(null);
+  const [activeTab, setActiveTab] = useState("top-anime");
 
   // Waifu GIF modal state
   const [waifuOpen, setWaifuOpen] = useState(false);
@@ -64,6 +64,13 @@ const Index = () => {
   useEffect(() => {
     loadTopAnime();
   }, [loadTopAnime]);
+
+  useEffect(() => {
+    const hash = window.location.hash.replace("#", "");
+    if (["top-anime", "seasonal", "top-manga"].includes(hash)) {
+      setActiveTab(hash);
+    }
+  }, []);
 
   const handleCardClick = async (anime: any) => {
     setSearching(false);
@@ -107,13 +114,13 @@ const Index = () => {
         <main className="flex-1 w-full pb-10">
           <LoaderOverlay show={loading || waifuLoading} />
 
-          <Tabs defaultValue="top-anime" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="flex justify-center border-b bg-white/30 backdrop-blur-sm sticky top-16 z-10">
               <div className="max-w-7xl w-full px-3 sm:px-8">
                 <TabsList className="bg-transparent p-0 h-14">
                   <TabsTrigger value="top-anime" className="text-base font-semibold text-zinc-600 data-[state=active]:text-purple-700 data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-purple-700 rounded-none h-full px-5">Top Anime</TabsTrigger>
                   <TabsTrigger value="seasonal" className="text-base font-semibold text-zinc-600 data-[state=active]:text-purple-700 data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-purple-700 rounded-none h-full px-5">Seasonal</TabsTrigger>
-                  <TabsTrigger value="manga" className="text-base font-semibold text-zinc-600 data-[state=active]:text-purple-700 data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-purple-700 rounded-none h-full px-5">Manga</TabsTrigger>
+                  <TabsTrigger value="top-manga" className="text-base font-semibold text-zinc-600 data-[state=active]:text-purple-700 data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-purple-700 rounded-none h-full px-5">Manga</TabsTrigger>
                 </TabsList>
               </div>
             </div>
@@ -128,7 +135,7 @@ const Index = () => {
             <TabsContent value="seasonal" className="mt-0">
               <SeasonalAnimeSection onCardClick={handleCardClick} />
             </TabsContent>
-            <TabsContent value="manga" className="mt-0">
+            <TabsContent value="top-manga" className="mt-0">
               <TopMangaSection />
             </TabsContent>
           </Tabs>
