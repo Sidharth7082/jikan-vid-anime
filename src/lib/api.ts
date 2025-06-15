@@ -36,3 +36,10 @@ export async function fetchSeasonalAnime(page = 1) {
   const data = await res.json();
   return data;
 }
+
+export async function fetchTopManga(page = 1) {
+  const res = await fetch(`${BASE_URL}/top/manga?page=${page}`);
+  if (!res.ok) throw new Error("Failed to fetch top manga");
+  const data = await res.json();
+  return data;
+}

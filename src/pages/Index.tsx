@@ -11,6 +11,7 @@ import HeroBanner from "@/components/HeroBanner";
 import TopAnimeSection from "@/components/TopAnimeSection";
 import ImageGallerySection from "@/components/ImageGallerySection";
 import SeasonalAnimeSection from "@/components/SeasonalAnimeSection";
+import TopMangaSection from "@/components/TopMangaSection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Loader overlay for async actions
@@ -112,6 +113,7 @@ const Index = () => {
                 <TabsList className="bg-transparent p-0 h-14">
                   <TabsTrigger value="top-anime" className="text-base font-semibold text-zinc-600 data-[state=active]:text-purple-700 data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-purple-700 rounded-none h-full px-5">Top Anime</TabsTrigger>
                   <TabsTrigger value="seasonal" className="text-base font-semibold text-zinc-600 data-[state=active]:text-purple-700 data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-purple-700 rounded-none h-full px-5">Seasonal</TabsTrigger>
+                  <TabsTrigger value="manga" className="text-base font-semibold text-zinc-600 data-[state=active]:text-purple-700 data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-purple-700 rounded-none h-full px-5">Manga</TabsTrigger>
                 </TabsList>
               </div>
             </div>
@@ -125,6 +127,9 @@ const Index = () => {
             </TabsContent>
             <TabsContent value="seasonal" className="mt-0">
               <SeasonalAnimeSection onCardClick={handleCardClick} />
+            </TabsContent>
+            <TabsContent value="manga" className="mt-0">
+              <TopMangaSection />
             </TabsContent>
           </Tabs>
 
