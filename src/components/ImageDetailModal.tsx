@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
@@ -110,18 +109,10 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
           <div className="h-full flex flex-col">
             <div className="p-6 border-b border-zinc-800">
                <h3 className="text-2xl font-bold mb-4">Post Details</h3>
-               <div className="flex items-center flex-wrap gap-4">
-                  <Button variant="link" asChild className="p-0 h-auto text-zinc-300 hover:text-white flex items-center gap-2 hover:no-underline">
-                    <a href={`https://danbooru.donmai.us/posts/${post.id}`} target="_blank" rel="noopener noreferrer">
-                      View on Danbooru
-                      <ExternalLink size={16} />
-                    </a>
-                  </Button>
-                  <Button variant="outline" onClick={handleDownload} disabled={isDownloading} size="sm" className="bg-transparent border-zinc-700 hover:bg-zinc-800 hover:text-white">
-                      {isDownloading ? <Loader2 size={16} className="animate-spin mr-2" /> : <Download size={16} className="mr-2" />}
-                      {isDownloading ? 'Downloading...' : 'Download'}
-                  </Button>
-               </div>
+               <Button variant="outline" onClick={handleDownload} disabled={isDownloading} size="sm" className="bg-transparent border-zinc-700 hover:bg-zinc-800 hover:text-white">
+                   {isDownloading ? <Loader2 size={16} className="animate-spin mr-2" /> : <Download size={16} className="mr-2" />}
+                   {isDownloading ? 'Downloading...' : 'Download'}
+               </Button>
             </div>
             <ScrollArea className="h-full">
               <div className="p-6">
