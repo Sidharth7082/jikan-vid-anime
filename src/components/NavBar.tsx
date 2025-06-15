@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
@@ -6,42 +5,42 @@ import { Link, useNavigate } from "react-router-dom";
 import { Home, User, History, Heart, Bell, FileText, Settings, LogOut, Instagram } from "lucide-react";
 import AnimeSearchBar from "@/components/AnimeSearchBar";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-const NavBar = ({ onSearch }: { onSearch: (v: any) => void }) => {
+const NavBar = ({
+  onSearch
+}: {
+  onSearch: (v: any) => void;
+}) => {
   const [session, setSession] = useState<Session | null>(null);
   const navigate = useNavigate();
-
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({
+      data: {
+        session
+      }
+    }) => {
       setSession(session);
     });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: {
+        subscription
+      }
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
-
     return () => subscription.unsubscribe();
   }, []);
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
   };
-
-  return (
-    <nav className="sticky top-0 z-30 w-full bg-white/80 backdrop-blur border-b border-zinc-200 shadow-md">
+  return <nav className="sticky top-0 z-30 w-full bg-white/80 backdrop-blur border-b border-zinc-200 shadow-md">
       <div className="max-w-7xl mx-auto flex justify-between items-center gap-4 py-2 px-5">
         <div className="flex items-center gap-6">
-          <Link to="/" className="text-3xl font-extrabold tracking-tight" style={{ color: "#7D36FF" }}>
+          <Link to="/" className="text-3xl font-extrabold tracking-tight" style={{
+          color: "#7D36FF"
+        }}>
             captureordie
           </Link>
           <Link to="/" className="font-medium text-zinc-900 rounded-full bg-zinc-100 px-4 py-1.5 shadow transition hover:bg-purple-100 flex items-center gap-2">
@@ -49,37 +48,27 @@ const NavBar = ({ onSearch }: { onSearch: (v: any) => void }) => {
             Home
           </Link>
           <a href="/#top-anime" className="hover:underline text-zinc-700 font-medium transition">Top Anime</a>
-          <a href="/#seasonal" className="hover:underline text-zinc-700 font-medium transition">Seasonal</a>
+          
           <Link to="/gifs" className="hover:underline text-zinc-700 font-medium transition">GIFs</Link>
           <Link to="/danbooru" className="hover:underline text-zinc-700 font-medium transition">Danbooru</Link>
           <a href="/#image" className="hover:underline text-zinc-700 font-medium transition">Image</a>
         </div>
         <div className="flex items-center gap-4">
-          <AnimeSearchBar
-            onSelect={onSearch}
-            className="max-w-none w-auto mb-0"
-            wrapperClass="!bg-zinc-100 !border-zinc-300 !rounded-full w-60"
-            placeholder="Search anime..."
-          />
-          {session ? (
-            <DropdownMenu>
+          <AnimeSearchBar onSelect={onSearch} className="max-w-none w-auto mb-0" wrapperClass="!bg-zinc-100 !border-zinc-300 !rounded-full w-60" placeholder="Search anime..." />
+          {session ? <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={(session.user.user_metadata.avatar_url as string) || undefined} alt={session.user.email ?? ''} />
+                    <AvatarImage src={session.user.user_metadata.avatar_url as string || undefined} alt={session.user.email ?? ''} />
                     <AvatarFallback>{session.user.email?.[0].toUpperCase()}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-64 bg-[#211F2D] text-white border-none rounded-xl p-2 mt-2"
-                align="end"
-                forceMount
-              >
+              <DropdownMenuContent className="w-64 bg-[#211F2D] text-white border-none rounded-xl p-2 mt-2" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal p-2">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {(session.user.user_metadata.full_name as string) || session.user.email?.split('@')[0]}
+                      {session.user.user_metadata.full_name as string || session.user.email?.split('@')[0]}
                     </p>
                     <p className="text-xs leading-none text-gray-400">
                       {session.user.email}
@@ -123,16 +112,11 @@ const NavBar = ({ onSearch }: { onSearch: (v: any) => void }) => {
                   <span>Logout</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Button asChild className="bg-purple-600 hover:bg-purple-700 text-white">
+            </DropdownMenu> : <Button asChild className="bg-purple-600 hover:bg-purple-700 text-white">
               <Link to="/auth">Login</Link>
-            </Button>
-          )}
+            </Button>}
         </div>
       </div>
-    </nav>
-  );
+    </nav>;
 };
-
 export default NavBar;
