@@ -2,7 +2,7 @@
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { X, ArrowLeft, Video, Subtitles } from "lucide-react";
+import { X, ArrowLeft, Video, Subtitles, Play } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
@@ -50,7 +50,7 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl sm:max-w-3xl w-full overflow-y-auto animate-fade-in font-sans bg-gradient-to-br from-[#19191eeb] via-[#101112ea] to-[#18181ebf] shadow-[0_12px_40px_0_rgba(18,16,39,0.94)] border border-[#232324] rounded-2xl p-0
+      <DialogContent className="max-w-7xl w-full overflow-y-auto animate-fade-in font-sans bg-gradient-to-br from-[#19191eeb] via-[#101112ea] to-[#18181ebf] shadow-[0_12px_40px_0_rgba(18,16,39,0.94)] border border-[#232324] rounded-2xl p-0
         backdrop-blur-lg"
         style={{ minHeight: 600 }}
       >
@@ -69,127 +69,128 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
             </Button>
           </div>
         </DialogHeader>
-        <div className="flex flex-col md:flex-row gap-7 px-6 pb-6 sm:pb-8 pt-3 sm:pt-4">
-          <img
-            src={anime.images?.webp?.large_image_url || anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url || "/placeholder.svg"}
-            alt={anime.title}
-            className="rounded-xl object-cover shadow-xl w-44 h-64 mx-auto md:mx-0 border-2 border-[#222223] bg-zinc-900 flex-shrink-0"
-            loading="lazy"
-            onError={(e) => ((e.target as HTMLImageElement).src = "/placeholder.svg")}
-          />
-          {/* Right: Details + streaming */}
-          <div className="flex-1 min-w-0 text-white flex flex-col gap-3 md:gap-5">
-            <div>
-              <DialogDescription asChild>
-                <p className="line-clamp-6 mb-3 text-neutral-200 leading-relaxed font-medium" style={{ textShadow: "0 0 12px #18181866" }}>
-                  {anime.synopsis || "No synopsis available."}
-                </p>
-              </DialogDescription>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {anime.genres?.map((g: any) => (
-                  <span className="bg-[#232323] text-[#f3f3f3] px-2 py-0.5 text-xs rounded" key={g.name}>
-                    {g.name}
-                  </span>
-                ))}
-                {anime.rating && (
-                  <span className="bg-[#232323] px-2 py-0.5 rounded text-xs text-neutral-200">{anime.rating}</span>
-                )}
-                {anime.score && (
-                  <span className="bg-[#e50914] ml-2 text-white rounded px-2 py-0.5 font-bold text-xs animate-fade-in shadow shadow-[#e50914]/30 tracking-wide drop-shadow">
-                    ★ {anime.score}
-                  </span>
-                )}
-              </div>
-              <div className="flex gap-3">
-                <Button
-                  variant={streamType === "sub" ? "default" : "ghost"}
-                  onClick={() => setStreamType("sub")}
-                  size="sm"
-                  className="flex gap-2"
-                  aria-pressed={streamType === "sub"}
-                >
-                  <Subtitles size={17} /> SUB
-                </Button>
-                <Button
-                  variant={streamType === "dub" ? "default" : "ghost"}
-                  onClick={() => setStreamType("dub")}
-                  size="sm"
-                  className="flex gap-2"
-                  aria-pressed={streamType === "dub"}
-                >
-                  <Video size={17} /> DUB
-                </Button>
-              </div>
-            </div>
-            <div>
-              {/* Video Player */}
-              <div className="relative mt-4 aspect-video w-full rounded-xl overflow-hidden border-2 border-[#202023] shadow-lg bg-zinc-900/80">
-                <iframe
-                  title={`${anime.title} episode ${episode} ${streamType}`}
-                  src={embedUrl}
-                  loading="lazy"
-                  allow="fullscreen"
-                  allowFullScreen
-                  className="w-full h-full min-h-[240px] bg-black"
-                  style={{ minHeight: 320, borderRadius: 12 }}
-                />
-                <span className="absolute left-2 top-2 bg-black/50 px-2 py-0.5 text-white font-bold text-xs rounded shadow">
-                  Watch: Ep. {episode} / {totalEpisodes} ({streamType.toUpperCase()})
-                </span>
-              </div>
-              {/* Episode Selector */}
-              <div className="flex flex-wrap gap-1 mt-3 max-h-28 overflow-x-auto animate-fade-in custom-scrollbar">
-                {Array.from(
-                  { length: totalEpisodes > 40 ? 40 : totalEpisodes || 0 },
-                  (_, i) => i + 1
-                ).map((epNum) => (
+        <div className="flex flex-col md:flex-row gap-6 p-6">
+          {/* Left Column: Episode List */}
+          <div className="w-full md:w-[320px] flex-shrink-0">
+            <h3 className="text-xl font-bold text-white mb-4 px-1">Episodes</h3>
+            <div className="max-h-[65vh] overflow-y-auto custom-scrollbar pr-2 space-y-2">
+              {Array.from({ length: totalEpisodes || 0 }, (_, i) => i + 1).map((epNum) => (
                   <Button
                     key={epNum}
-                    variant={epNum === episode ? "secondary" : "ghost"}
+                    variant="ghost"
                     className={cn(
-                      "p-1 h-7 text-xs w-9 font-bold",
-                      epNum === episode ? "ring-2 ring-[#e50914]" : ""
+                      "w-full justify-start text-left h-auto py-2 px-3 rounded-lg transition-colors duration-200 ease-in-out text-zinc-300 hover:bg-zinc-700/50 hover:text-white flex items-center gap-3",
+                      epNum === episode ? "bg-zinc-700 !text-purple-400 font-bold border-l-4 border-purple-500 rounded-l-none" : ""
                     )}
                     onClick={() => setEpisode(epNum)}
-                    aria-current={epNum === episode}
                   >
-                    {epNum}
+                    <span className="text-zinc-500 font-mono w-8 flex-shrink-0">{epNum}</span>
+                    <span className="truncate flex-1">Episode {epNum}</span>
+                    {epNum === episode && <Play className="w-5 h-5 text-purple-400 ml-auto flex-shrink-0" fill="currentColor" />}
                   </Button>
                 ))}
-                {totalEpisodes > 40 && (
-                  <span className="px-3 py-1 text-xs text-slate-200/70">…</span>
-                )}
-              </div>
-              {/* Source Button */}
-              <div className="flex gap-2 mt-5 justify-end">
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className="font-bold"
-                >
-                  <a
-                    href={anime.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+            </div>
+          </div>
+
+          {/* Right Column: Player & Details */}
+          <div className="flex-1 min-w-0">
+            {/* Video Player */}
+            <div className="relative aspect-video w-full rounded-xl overflow-hidden border-2 border-[#202023] shadow-lg bg-zinc-900/80">
+              <iframe
+                title={`${anime.title} episode ${episode} ${streamType}`}
+                src={embedUrl}
+                loading="lazy"
+                allow="fullscreen"
+                allowFullScreen
+                className="w-full h-full bg-black"
+              />
+              <span className="absolute left-2 top-2 bg-black/50 px-2 py-0.5 text-white font-bold text-xs rounded shadow">
+                Watch: Ep. {episode} / {totalEpisodes} ({streamType.toUpperCase()})
+              </span>
+            </div>
+            
+            <div className="flex gap-3 mt-4">
+              <Button
+                variant={streamType === "sub" ? "default" : "ghost"}
+                onClick={() => setStreamType("sub")}
+                size="sm"
+                className="flex gap-2"
+                aria-pressed={streamType === "sub"}
+              >
+                <Subtitles size={17} /> SUB
+              </Button>
+              <Button
+                variant={streamType === "dub" ? "default" : "ghost"}
+                onClick={() => setStreamType("dub")}
+                size="sm"
+                className="flex gap-2"
+                aria-pressed={streamType === "dub"}
+              >
+                <Video size={17} /> DUB
+              </Button>
+            </div>
+            
+            {/* Details section */}
+            <div className="mt-6 flex flex-col md:flex-row gap-6">
+              <img
+                src={anime.images?.webp?.large_image_url || anime.images?.jpg?.large_image_url || "/placeholder.svg"}
+                alt={anime.title}
+                className="rounded-xl object-cover shadow-xl w-44 h-64 mx-auto md:mx-0 border-2 border-[#222223] bg-zinc-900 flex-shrink-0"
+                loading="lazy"
+                onError={(e) => ((e.target as HTMLImageElement).src = "/placeholder.svg")}
+              />
+              <div className="flex-1 min-w-0 text-white">
+                <DialogDescription asChild>
+                  <p className="line-clamp-6 mb-3 text-neutral-200 leading-relaxed font-medium" style={{ textShadow: "0 0 12px #18181866" }}>
+                    {anime.synopsis || "No synopsis available."}
+                  </p>
+                </DialogDescription>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {anime.genres?.map((g: any) => (
+                    <span className="bg-[#232323] text-[#f3f3f3] px-2 py-0.5 text-xs rounded" key={g.name}>
+                      {g.name}
+                    </span>
+                  ))}
+                  {anime.rating && (
+                    <span className="bg-[#232323] px-2 py-0.5 rounded text-xs text-neutral-200">{anime.rating}</span>
+                  )}
+                  {anime.score && (
+                    <span className="bg-[#e50914] ml-2 text-white rounded px-2 py-0.5 font-bold text-xs animate-fade-in shadow shadow-[#e50914]/30 tracking-wide drop-shadow">
+                      ★ {anime.score}
+                    </span>
+                  )}
+                </div>
+                {/* Source Buttons */}
+                <div className="flex gap-2 mt-5 justify-start">
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="font-bold"
                   >
-                    View on MyAnimeList
-                  </a>
-                </Button>
-                <Button
-                  asChild
-                  variant="default"
-                  size="sm"
-                  className="font-bold"
-                >
-                  <a
-                    href={embedUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    <a
+                      href={anime.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View on MyAnimeList
+                    </a>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="default"
+                    size="sm"
+                    className="font-bold"
                   >
-                    ▶ Direct Stream Link
-                  </a>
-                </Button>
+                    <a
+                      href={embedUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      ▶ Direct Stream Link
+                    </a>
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
