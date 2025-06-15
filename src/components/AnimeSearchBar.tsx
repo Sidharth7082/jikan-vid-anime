@@ -1,46 +1,73 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { searchAnime } from "@/lib/api";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, Search, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Props {
-  onSelect: (anime: any) => void;
+  onSelect: (anime: any | null) => void;
 }
 
 const AnimeSearchBar: React.FC<Props> = ({ onSelect }) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
-    if (e.target.value.length < 2) {
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setQuery(val);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    if (val.length < 2) {
       setResults([]);
+      setLoading(false);
       return;
     }
     setLoading(true);
-    try {
-      const searchRes = await searchAnime(e.target.value);
-      setResults(searchRes.slice(0, 8));
-    } catch {
-      setResults([]);
-    }
-    setLoading(false);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const searchRes = await searchAnime(val);
+        setResults(searchRes.slice(0, 8));
+      } catch {
+        setResults([]);
+      }
+      setLoading(false);
+    }, 400);
+  };
+
+  const handleReset = () => {
+    setQuery("");
+    setResults([]);
+    onSelect(null);
   };
 
   return (
-    <div className="relative w-full max-w-md mx-auto mb-8">
-      <Input
-        value={query}
-        onChange={handleInput}
-        placeholder="Search anime (e.g. Naruto)..."
-        className="pl-4 pr-4 py-2 text-lg rounded-lg shadow bg-card border"
-        autoFocus={false}
-      />
-      {loading && <Loader2 className="animate-spin absolute right-3 top-3 w-5 h-5 text-muted-foreground" />}
+    <div className="relative w-full max-w-lg mx-auto mb-2">
+      <div className="flex items-center bg-card/75 rounded-lg border px-2 py-1 shadow focus-within:ring-2 ring-[#e50914] backdrop-blur">
+        <Search className="text-muted-foreground mr-2" size={20} />
+        <Input
+          value={query}
+          onChange={handleInput}
+          placeholder="Search anime (e.g. Naruto, Attack on Titan)…"
+          className="!border-0 bg-transparent font-medium text-base focus:ring-0 focus-visible:ring-0"
+          autoFocus={false}
+          aria-label="Search anime"
+        />
+        {query ? (
+          <Button size="icon" variant="ghost" onClick={handleReset} className="ml-1" aria-label="Clear">
+            <X size={18} />
+          </Button>
+        ) : null}
+        {loading && (
+          <Loader2 className="animate-spin ml-2 text-muted-foreground" size={18} />
+        )}
+      </div>
       {results.length > 0 && (
-        <div className="absolute left-0 right-0 bg-popover shadow-lg rounded-lg mt-1 z-30 animate-fade-in overflow-hidden max-h-72">
+        <div className="absolute left-0 right-0 bg-popover/90 shadow-lg rounded-lg mt-1 z-30 animate-fade-in overflow-hidden max-h-72 border border-card/35 backdrop-blur-lg">
           {results.map((anime) => (
             <button
               key={anime.mal_id}
@@ -49,15 +76,28 @@ const AnimeSearchBar: React.FC<Props> = ({ onSelect }) => {
                 setResults([]);
                 onSelect(anime);
               }}
-              className="flex items-center gap-3 p-2 hover:bg-secondary w-full transition text-left border-b last-of-type:border-b-0"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 w-full text-left border-b border-border/25 last-of-type:border-b-0 transition",
+                "hover:bg-secondary/90 focus:bg-secondary focus:outline-none focus-visible:ring-2 ring-[#e50914]"
+              )}
               tabIndex={0}
             >
               <img
-                src={anime.images?.webp?.image_url || anime.images?.jpg?.image_url}
+                src={
+                  anime.images?.webp?.image_url ||
+                  anime.images?.jpg?.image_url ||
+                  ""
+                }
                 alt={anime.title}
-                className="w-10 h-14 object-cover rounded shadow"
+                className="w-10 h-14 object-cover rounded shadow bg-zinc-900"
+                onError={(e) =>
+                  ((e.target as HTMLImageElement).src =
+                    "/placeholder.svg")
+                }
               />
-              <span className="font-semibold line-clamp-1">{anime.title}</span>
+              <span className="font-semibold line-clamp-1">
+                {anime.title}
+              </span>
             </button>
           ))}
         </div>
