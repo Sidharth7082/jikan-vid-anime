@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { useNavigate } from "react-router-dom"
@@ -131,7 +130,7 @@ const ProfilePage = () => {
                         name="fullName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-gray-400 text-xs uppercase">Your Name</FormLabel>
+                            <FormLabel className="text-white text-xs uppercase">Your Name</FormLabel>
                             <FormControl>
                               <Input id="fullName" className="bg-[#181520] border-gray-700" {...field} />
                             </FormControl>
@@ -141,7 +140,7 @@ const ProfilePage = () => {
                       />
                       
                       <FormItem>
-                        <FormLabel className="text-gray-400 text-xs uppercase">Email Address</FormLabel>
+                        <FormLabel className="text-white text-xs uppercase">Email Address</FormLabel>
                         <div className="flex items-center gap-4">
                           <Input className="bg-[#181520] border-gray-700" value={user.email} readOnly />
                           {user.email_confirmed_at && (
@@ -154,12 +153,12 @@ const ProfilePage = () => {
                       </FormItem>
 
                       <FormItem>
-                        <FormLabel className="text-gray-400 text-xs uppercase">Joined</FormLabel>
+                        <FormLabel className="text-white text-xs uppercase">Joined</FormLabel>
                         <Input className="bg-[#181520] border-gray-700" value={new Date(user.created_at).toLocaleDateString()} readOnly />
                       </FormItem>
 
                       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4">
-                        <Button type="button" variant="link" className="text-gray-400 hover:text-white p-0" onClick={handlePasswordReset}>
+                        <Button type="button" variant="link" className="text-white hover:text-gray-300 p-0" onClick={handlePasswordReset}>
                           <KeyRound className="mr-2 h-4 w-4" />
                           Change password
                         </Button>
@@ -187,7 +186,7 @@ const ProfilePage = () => {
                       </div>
                   </div>
               </AvatarPickerDialog>
-              <p className="text-gray-400 text-sm">Click avatar to change</p>
+              <p className="text-white text-sm">Click avatar to change</p>
             </div>
           </div>
         </div>
