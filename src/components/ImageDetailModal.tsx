@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ExternalLink, Download, Loader2 } from 'lucide-react';
+import { ExternalLink, Download, Loader2, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Button } from './ui/button';
 import { useToast } from './ui/use-toast';
 import axios from 'axios';
@@ -18,7 +18,8 @@ interface Post {
   rating: string;
 }
 interface ImageDetailModalProps {
-  post: Post | null;
+  posts: Post[];
+  initialIndex: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onTagClick: (tag: string) => void;
@@ -55,16 +56,46 @@ const TagSection = ({
     </div>;
 };
 export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
-  post,
+  posts,
+  initialIndex,
   open,
   onOpenChange,
   onTagClick
 }) => {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isDownloading, setIsDownloading] = useState(false);
   const {
     toast
   } = useToast();
+
+  useEffect(() => {
+    if (open) {
+      setCurrentIndex(initialIndex);
+    }
+  }, [initialIndex, open]);
+  
+  const handleNext = useCallback(() => {
+    setCurrentIndex(prev => (prev + 1) % posts.length);
+  }, [posts.length]);
+
+  const handlePrev = useCallback(() => {
+    setCurrentIndex(prev => (prev - 1 + posts.length) % posts.length);
+  }, [posts.length]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') handleNext();
+      if (e.key === 'ArrowLeft') handlePrev();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleNext, handlePrev]);
+
+  const post = posts[currentIndex];
   if (!post) return null;
+
   const handleDownload = async () => {
     if (!post.large_file_url) {
       toast({
@@ -105,14 +136,24 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
   };
   return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-screen-2xl w-[98vw] h-[98vh] p-0 gap-0 bg-zinc-900 border-zinc-800 text-zinc-50 overflow-hidden">
+        <DialogTitle className="sr-only">Image Detail - {post.tag_string_artist || `Post ${post.id}`}</DialogTitle>
+        <DialogDescription className="sr-only">{post.tag_string_general}</DialogDescription>
         <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] lg:grid-cols-[320px_1fr] h-full">
           <div className="h-full flex flex-col">
             <div className="p-6 border-b border-zinc-800">
                <h3 className="text-2xl font-bold mb-4">Post Details</h3>
-               <Button variant="outline" onClick={handleDownload} disabled={isDownloading} size="sm" className="bg-transparent border-zinc-700 hover:bg-zinc-800 hover:text-white">
-                   {isDownloading ? <Loader2 size={16} className="animate-spin mr-2" /> : <Download size={16} className="mr-2" />}
-                   {isDownloading ? 'Downloading...' : 'Download'}
-               </Button>
+               <div className="flex flex-wrap items-center gap-2">
+                 <Button variant="outline" onClick={handleDownload} disabled={isDownloading} size="sm" className="bg-transparent border-zinc-700 hover:bg-zinc-800 hover:text-white">
+                     {isDownloading ? <Loader2 size={16} className="animate-spin mr-2" /> : <Download size={16} className="mr-2" />}
+                     {isDownloading ? 'Downloading...' : 'Download'}
+                 </Button>
+                 <Button variant="outline" size="sm" asChild className="bg-transparent border-zinc-700 hover:bg-zinc-800 hover:text-white">
+                   <a href={`https://danbooru.donmai.us/posts/${post.id}`} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink size={16} className="mr-2" />
+                    View on Danbooru
+                   </a>
+                 </Button>
+               </div>
             </div>
             <ScrollArea className="h-full">
               <div className="p-6">
@@ -124,20 +165,38 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
               </div>
             </ScrollArea>
           </div>
-          <div className="h-full bg-black">
+          <div className="relative h-full bg-black flex items-center justify-center">
+             {posts.length > 1 && (
+              <>
+                <Button onClick={handlePrev} variant="ghost" size="icon" className="absolute left-2 top-1/2 -translate-y-1/2 z-20 h-16 w-16 text-white/50 hover:text-white hover:bg-black/20 rounded-full">
+                  <ArrowLeft size={32} />
+                  <span className="sr-only">Previous Image</span>
+                </Button>
+                <Button onClick={handleNext} variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 z-20 h-16 w-16 text-white/50 hover:text-white hover:bg-black/20 rounded-full">
+                  <ArrowRight size={32} />
+                  <span className="sr-only">Next Image</span>
+                </Button>
+              </>
+            )}
             <ScrollArea className="h-full w-full">
               <div className="flex min-h-full items-center justify-center p-4">
                 {post.large_file_url ? (
                   <img
                     src={post.large_file_url}
                     alt={post.tag_string_general}
-                    className="max-w-none"
+                    className="max-w-full max-h-[96vh] object-contain transition-opacity duration-300"
+                    key={post.id}
                   />
                 ) : (
                   <div className="text-white">Image not available</div>
                 )}
               </div>
             </ScrollArea>
+             {posts.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-sm px-3 py-1 rounded-full z-10">
+                    {currentIndex + 1} / {posts.length}
+                </div>
+            )}
           </div>
         </div>
       </DialogContent>

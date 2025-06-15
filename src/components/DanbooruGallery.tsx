@@ -32,7 +32,7 @@ const DanbooruGallery = ({ currentSearch, onTagClick }: { currentSearch: string,
   const [hasMore, setHasMore] = useState(true);
   const { toast } = useToast();
   const searchRef = useRef(currentSearch);
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [selectedPostIndex, setSelectedPostIndex] = useState<number | null>(null);
 
   const fetchPosts = useCallback(async (searchTags: string, pageNum: number) => {
     setLoading(true);
@@ -93,11 +93,11 @@ const DanbooruGallery = ({ currentSearch, onTagClick }: { currentSearch: string,
         {loading ? (
           Array.from({ length: POST_LIMIT }).map((_, i) => <Skeleton key={i} className="aspect-[3/4] w-full h-auto rounded-lg" />)
         ) : (
-          posts.map((post) => (
+          posts.map((post, index) => (
             <div 
               key={post.id} 
               className="group aspect-[3/4] bg-black/5 rounded-lg overflow-hidden border relative cursor-pointer"
-              onClick={() => setSelectedPost(post)}
+              onClick={() => setSelectedPostIndex(index)}
             >
               <img 
                 src={post.preview_file_url || post.large_file_url} 
@@ -152,13 +152,14 @@ const DanbooruGallery = ({ currentSearch, onTagClick }: { currentSearch: string,
         </div>
       )}
 
-      {selectedPost && (
+      {selectedPostIndex !== null && posts.length > 0 && (
         <ImageDetailModal 
-          post={selectedPost}
-          open={!!selectedPost}
+          posts={posts}
+          initialIndex={selectedPostIndex}
+          open={selectedPostIndex !== null}
           onOpenChange={(isOpen) => {
             if (!isOpen) {
-              setSelectedPost(null);
+              setSelectedPostIndex(null);
             }
           }}
           onTagClick={onTagClick}
