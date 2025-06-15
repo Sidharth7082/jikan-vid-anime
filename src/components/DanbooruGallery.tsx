@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,14 +23,6 @@ interface Post {
   tag_string_character: string;
   tag_string_meta: string;
   rating: string;
-  created_at: string;
-  score: number;
-  source: string;
-  image_width: number;
-  image_height: number;
-  file_size: number;
-  fav_count: number;
-  uploader_id: number;
 }
 
 const DanbooruGallery = ({ currentSearch, onTagClick }: { currentSearch: string, onTagClick: (tag: string) => void }) => {
@@ -41,7 +32,7 @@ const DanbooruGallery = ({ currentSearch, onTagClick }: { currentSearch: string,
   const [hasMore, setHasMore] = useState(true);
   const { toast } = useToast();
   const searchRef = useRef(currentSearch);
-  const [selectedPostIndex, setSelectedPostIndex] = useState<number | null>(null);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
   const fetchPosts = useCallback(async (searchTags: string, pageNum: number) => {
     setLoading(true);
@@ -102,11 +93,11 @@ const DanbooruGallery = ({ currentSearch, onTagClick }: { currentSearch: string,
         {loading ? (
           Array.from({ length: POST_LIMIT }).map((_, i) => <Skeleton key={i} className="aspect-[3/4] w-full h-auto rounded-lg" />)
         ) : (
-          posts.map((post, index) => (
+          posts.map((post) => (
             <div 
               key={post.id} 
               className="group aspect-[3/4] bg-black/5 rounded-lg overflow-hidden border relative cursor-pointer"
-              onClick={() => setSelectedPostIndex(index)}
+              onClick={() => setSelectedPost(post)}
             >
               <img 
                 src={post.preview_file_url || post.large_file_url} 
@@ -161,14 +152,13 @@ const DanbooruGallery = ({ currentSearch, onTagClick }: { currentSearch: string,
         </div>
       )}
 
-      {selectedPostIndex !== null && posts.length > 0 && (
+      {selectedPost && (
         <ImageDetailModal 
-          posts={posts}
-          initialIndex={selectedPostIndex}
-          open={selectedPostIndex !== null}
+          post={selectedPost}
+          open={!!selectedPost}
           onOpenChange={(isOpen) => {
             if (!isOpen) {
-              setSelectedPostIndex(null);
+              setSelectedPost(null);
             }
           }}
           onTagClick={onTagClick}
