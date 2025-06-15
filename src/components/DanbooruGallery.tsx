@@ -1,9 +1,15 @@
-
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 const POST_LIMIT = 20;
@@ -19,19 +25,13 @@ interface Post {
 const DanbooruGallery = ({ currentSearch }: { currentSearch: string }) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const { toast } = useToast();
+  const searchRef = useRef(currentSearch);
 
-  const fetchPosts = useCallback(async (searchTags: string, pageNum: number, loadMore = false) => {
-    if (loadMore) {
-      setLoadingMore(true);
-    } else {
-      setLoading(true);
-      setPosts([]);
-    }
-
+  const fetchPosts = useCallback(async (searchTags: string, pageNum: number) => {
+    setLoading(true);
     try {
       const response = await axios.get("https://danbooru.donmai.us/posts.json", {
         params: {
@@ -43,13 +43,8 @@ const DanbooruGallery = ({ currentSearch }: { currentSearch: string }) => {
 
       const newPosts: Post[] = response.data.filter((p: any) => p.id && p.preview_file_url);
 
-      if (newPosts.length < POST_LIMIT) {
-        setHasMore(false);
-      } else {
-        setHasMore(true);
-      }
-      
-      setPosts(prev => loadMore ? [...prev, ...newPosts] : newPosts);
+      setHasMore(newPosts.length === POST_LIMIT);
+      setPosts(newPosts);
     } catch (error) {
       toast({
         title: "Error fetching posts",
@@ -57,25 +52,31 @@ const DanbooruGallery = ({ currentSearch }: { currentSearch: string }) => {
         variant: "destructive",
       });
       setHasMore(false);
+      setPosts([]);
     } finally {
-      if (loadMore) {
-        setLoadingMore(false);
-      } else {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   }, [toast]);
 
   useEffect(() => {
-    fetchPosts(currentSearch, 1);
-    setPage(1);
-    setHasMore(true);
-  }, [currentSearch, fetchPosts]);
+    if (searchRef.current !== currentSearch) {
+      searchRef.current = currentSearch;
+      setPage(1);
+    } else {
+      fetchPosts(currentSearch, page);
+    }
+  }, [currentSearch, page, fetchPosts]);
 
-  const handleLoadMore = () => {
-    const newPage = page + 1;
-    setPage(newPage);
-    fetchPosts(currentSearch, newPage, true);
+  const handlePrevious = () => {
+    if (page > 1 && !loading) {
+      setPage((p) => p - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (hasMore && !loading) {
+      setPage((p) => p + 1);
+    }
   };
 
   return (
@@ -99,12 +100,39 @@ const DanbooruGallery = ({ currentSearch }: { currentSearch: string }) => {
          </div>
       )}
 
-      {!loading && posts.length > 0 && hasMore && (
+      {!loading && posts.length > 0 && (page > 1 || hasMore) && (
         <div className="flex justify-center mt-6">
-          <Button onClick={handleLoadMore} disabled={loadingMore}>
-            {loadingMore ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Load More
-          </Button>
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <Button 
+                  variant="ghost" 
+                  size="default" 
+                  onClick={handlePrevious} 
+                  disabled={page === 1 || loading}
+                  className="gap-1 pl-2.5"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  <span>Previous</span>
+                </Button>
+              </PaginationItem>
+              <PaginationItem>
+                <span className="p-2 font-medium text-sm">Page {page}</span>
+              </PaginationItem>
+              <PaginationItem>
+                <Button 
+                  variant="ghost" 
+                  size="default" 
+                  onClick={handleNext} 
+                  disabled={!hasMore || loading}
+                  className="gap-1 pr-2.5"
+                >
+                  <span>Next</span>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </div>
       )}
     </>
