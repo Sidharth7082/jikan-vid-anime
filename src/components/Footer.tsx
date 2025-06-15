@@ -36,8 +36,8 @@ const Footer = () => {
                 <div className="border-t border-gray-800 pt-8 mt-8 flex flex-col sm:flex-row justify-between items-center text-sm text-gray-400 space-y-4 sm:space-y-0">
                     <div className="flex space-x-6">
                         <Link to="/terms" className="hover:text-white">Terms of Service</Link>
-                        <Link to="#" className="hover:text-white">DMCA</Link>
-                        <Link to="#" className="hover:text-white">Contact</Link>
+                        <Link to="/dmca" className="hover:text-white">DMCA</Link>
+                        <Link to="/contact" className="hover:text-white">Contact</Link>
                     </div>
                     <p>&copy; {new Date().getFullYear()} captureordie. All rights reserved.</p>
                 </div>

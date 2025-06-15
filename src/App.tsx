@@ -13,6 +13,8 @@ import GifsPage from "./pages/GifsPage";
 import DanbooruPage from "./pages/DanbooruPage";
 import SettingsPage from "./pages/SettingsPage";
 import TermsOfServicePage from "./pages/TermsOfServicePage";
+import DMCAPage from "./pages/DMCAPage";
+import ContactPage from "./pages/ContactPage";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +33,8 @@ const App = () => (
           <Route path="/danbooru" element={<DanbooruPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/terms" element={<TermsOfServicePage />} />
+          <Route path="/dmca" element={<DMCAPage />} />
+          <Route path="/contact" element={<ContactPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
