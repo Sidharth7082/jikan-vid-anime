@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ExternalLink, Download, Loader2 } from 'lucide-react';
+import { Download, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useToast } from './ui/use-toast';
 import axios from 'axios';
@@ -106,14 +106,12 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
       <DialogContent className="max-w-6xl w-[95vw] h-[90vh] p-0 gap-0 bg-zinc-900 border-zinc-800 text-zinc-50 overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr] h-full">
           <div className="h-full flex flex-col">
-            <div className="p-6 border-b border-zinc-800 flex items-center justify-between gap-4">
-               <Button variant="link" asChild className="p-0 h-auto text-sm text-zinc-400 hover:text-white">
-                  
-                </Button>
-                <Button variant="outline" onClick={handleDownload} disabled={isDownloading} size="sm" className="bg-transparent border-zinc-700 hover:bg-zinc-800 hover:text-white">
-                    {isDownloading ? <Loader2 size={16} className="animate-spin mr-2" /> : <Download size={16} className="mr-2" />}
-                    {isDownloading ? 'Downloading...' : 'Download'}
-                </Button>
+            <div className="p-6 border-b border-zinc-800">
+               <h3 className="text-2xl font-bold mb-4">Post Details</h3>
+               <Button variant="link" onClick={handleDownload} disabled={isDownloading} className="p-0 h-auto text-zinc-300 hover:text-white flex items-center gap-2 hover:no-underline">
+                 {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                 <span>{isDownloading ? 'Downloading...' : 'Download'}</span>
+               </Button>
             </div>
             <ScrollArea className="h-full">
               <div className="p-6">
