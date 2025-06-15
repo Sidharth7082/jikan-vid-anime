@@ -1,11 +1,19 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { Link, useNavigate } from "react-router-dom";
-import { Home } from "lucide-react";
+import { Home, User, History, Heart, Bell, FileText, Settings, LogOut } from "lucide-react";
 import AnimeSearchBar from "@/components/AnimeSearchBar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const NavBar = ({ onSearch }: { onSearch: (v: any) => void }) => {
   const [session, setSession] = useState<Session | null>(null);
@@ -52,7 +60,64 @@ const NavBar = ({ onSearch }: { onSearch: (v: any) => void }) => {
             placeholder="Search anime..."
           />
           {session ? (
-            <Button onClick={handleLogout} variant="outline" className="text-purple-700 border-purple-400 hover:bg-purple-50">Logout</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={(session.user.user_metadata.avatar_url as string) || undefined} alt={session.user.email ?? ''} />
+                    <AvatarFallback>{session.user.email?.[0].toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-64 bg-[#211F2D] text-white border-none rounded-xl p-2 mt-2"
+                align="end"
+                forceMount
+              >
+                <DropdownMenuLabel className="font-normal p-2">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {(session.user.user_metadata.full_name as string) || session.user.email?.split('@')[0]}
+                    </p>
+                    <p className="text-xs leading-none text-gray-400">
+                      {session.user.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-[#3A374A]/50" />
+                <div className="p-1 space-y-1">
+                  <DropdownMenuItem className="rounded-lg hover:!bg-[#3A374A] focus:!bg-[#3A374A] cursor-pointer p-2 text-sm">
+                    <User className="mr-3 h-5 w-5" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="rounded-lg hover:!bg-[#3A374A] focus:!bg-[#3A374A] cursor-pointer p-2 text-sm">
+                    <History className="mr-3 h-5 w-5" />
+                    <span>Continue Watching</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="rounded-lg hover:!bg-[#3A374A] focus:!bg-[#3A374A] cursor-pointer p-2 text-sm">
+                    <Heart className="mr-3 h-5 w-5 text-pink-400" />
+                    <span>Watch List</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="rounded-lg hover:!bg-[#3A374A] focus:!bg-[#3A374A] cursor-pointer p-2 text-sm">
+                    <Bell className="mr-3 h-5 w-5" />
+                    <span>Notification</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="rounded-lg hover:!bg-[#3A374A] focus:!bg-[#3A374A] cursor-pointer p-2 text-sm">
+                    <FileText className="mr-3 h-5 w-5" />
+                    <span>MAL Import / Export</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="rounded-lg hover:!bg-[#3A374A] focus:!bg-[#3A374A] cursor-pointer p-2 text-sm">
+                    <Settings className="mr-3 h-5 w-5" />
+                    <span>Settings</span>
+                  </DropdownMenuItem>
+                </div>
+                <DropdownMenuSeparator className="bg-[#3A374A]/50" />
+                <DropdownMenuItem onClick={handleLogout} className="rounded-lg hover:!bg-[#3A374A] focus:!bg-[#3A374A] cursor-pointer p-2 text-sm">
+                  <LogOut className="mr-3 h-5 w-5" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Button asChild className="bg-purple-600 hover:bg-purple-700 text-white">
               <Link to="/auth">Login</Link>
