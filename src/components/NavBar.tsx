@@ -86,9 +86,11 @@ const NavBar = ({ onSearch }: { onSearch: (v: any) => void }) => {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-[#3A374A]/50" />
                 <div className="p-1 space-y-1">
-                  <DropdownMenuItem className="rounded-lg hover:!bg-[#3A374A] focus:!bg-[#3A374A] cursor-pointer p-2 text-sm">
-                    <User className="mr-3 h-5 w-5" />
-                    <span>Profile</span>
+                  <DropdownMenuItem asChild className="rounded-lg hover:!bg-[#3A374A] focus:!bg-[#3A374A] cursor-pointer p-2 text-sm">
+                    <Link to="/profile">
+                      <User className="mr-3 h-5 w-5" />
+                      <span>Profile</span>
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="rounded-lg hover:!bg-[#3A374A] focus:!bg-[#3A374A] cursor-pointer p-2 text-sm">
                     <History className="mr-3 h-5 w-5" />
