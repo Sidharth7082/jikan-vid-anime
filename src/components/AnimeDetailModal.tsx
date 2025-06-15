@@ -1,8 +1,9 @@
+
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X, ArrowLeft, Video, Subtitles } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -14,6 +15,30 @@ interface Props {
 const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
   const [episode, setEpisode] = useState(1);
   const [streamType, setStreamType] = useState<"sub" | "dub">("sub");
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const handlePlayerEvent = (event: MessageEvent) => {
+      // For security, only accept messages from the video player's origin
+      if (event.origin !== "https://vidsrc.cc") {
+        return;
+      }
+
+      if (event.data && event.data.type === "PLAYER_EVENT") {
+        console.log("Player Event Received:", event.data.data);
+        // This can be expanded later to track user watch progress.
+      }
+    };
+
+    window.addEventListener("message", handlePlayerEvent);
+
+    return () => {
+      window.removeEventListener("message", handlePlayerEvent);
+    };
+  }, [open]);
 
   if (!anime) return null;
   const mainId = anime.mal_id;
