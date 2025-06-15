@@ -1,4 +1,3 @@
-
 import React from 'react';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
@@ -18,7 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Twitter, Instagram, Reddit } from 'lucide-react';
+import { Twitter, Instagram, Globe } from 'lucide-react';
 
 const formSchema = z.object({
     email: z.string().email({ message: "Please enter a valid email." }),
@@ -72,7 +71,7 @@ const ContactPage = () => {
                     <div className="flex flex-wrap gap-4 mb-8">
                         <SocialButton href="https://x.com/captureordie04" icon={<Twitter className="w-5 h-5 text-[#1DA1F2]" />} label="Twitter" />
                         <SocialButton href="https://www.instagram.com/captureordie/" icon={<Instagram className="w-5 h-5 text-[#E1306C]" />} label="Instagram" />
-                        <SocialButton href="https://www.reddit.com/user/GuiltyAppointment1/" icon={<Reddit className="w-5 h-5 text-[#FF4500]" />} label="Reddit" />
+                        <SocialButton href="https://www.reddit.com/user/GuiltyAppointment1/" icon={<Globe className="w-5 h-5 text-[#FF4500]" />} label="Reddit" />
                     </div>
 
                     <Form {...form}>
