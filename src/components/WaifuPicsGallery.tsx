@@ -2,7 +2,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Happy } from 'lucide-react';
+import { Smile } from 'lucide-react';
 import axios from 'axios';
 
 const SFW_CATEGORIES = [
@@ -75,7 +75,7 @@ const WaifuPicsGallery: React.FC = () => {
                 </section>
             ) : (
                 <div className="col-span-full text-zinc-500 text-center p-10 flex flex-col items-center bg-zinc-100/50 rounded-lg border border-dashed">
-                  <Happy className="w-16 h-16 mb-4 text-zinc-400" />
+                  <Smile className="w-16 h-16 mb-4 text-zinc-400" />
                   <p className="font-semibold text-lg">No images found</p>
                   <p className="text-sm">Try selecting another category.</p>
                 </div>
