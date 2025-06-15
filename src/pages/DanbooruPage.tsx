@@ -1,11 +1,22 @@
 
-import React from "react";
+import React, { useState } from "react";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DanbooruGallery from "@/components/DanbooruGallery";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 
 const DanbooruPage = () => {
+  const [tags, setTags] = useState("");
+  const [currentSearch, setCurrentSearch] = useState("");
+
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setCurrentSearch(tags);
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex flex-col w-full bg-gradient-to-br from-[#e0e0ff]/60 via-[#f8f4fa]/60 to-[#faf6fb]/90">
@@ -18,7 +29,30 @@ const DanbooruPage = () => {
               <h2 className="text-3xl md:text-4xl font-extrabold text-zinc-900 tracking-tight drop-shadow">Danbooru</h2>
               <p className="text-lg text-zinc-600 mt-1">High-quality anime image board</p>
             </div>
-            <DanbooruGallery />
+            <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] lg:grid-cols-[320px_1fr] gap-8 items-start">
+              {/* Left Sidebar */}
+              <aside className="md:sticky top-24 h-fit">
+                <div className="p-4 border border-zinc-200/80 rounded-2xl bg-white/60 shadow-lg backdrop-blur-sm space-y-4">
+                  <h3 className="font-bold text-lg text-zinc-800">Search Tags</h3>
+                  <form onSubmit={handleSearch} className="flex flex-col gap-2">
+                    <Input 
+                      placeholder="e.g. 'genshin_impact long_hair'"
+                      value={tags}
+                      onChange={(e) => setTags(e.target.value)}
+                    />
+                    <Button type="submit">
+                      <Search className="mr-2 h-4 w-4" />
+                      Search
+                    </Button>
+                  </form>
+                </div>
+              </aside>
+
+              {/* Right Content */}
+              <div className="p-4 border border-zinc-200/80 rounded-2xl bg-white/60 shadow-lg backdrop-blur-sm">
+                <DanbooruGallery currentSearch={currentSearch} />
+              </div>
+            </div>
           </div>
         </main>
 

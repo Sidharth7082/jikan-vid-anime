@@ -2,10 +2,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, Search } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 const POST_LIMIT = 20;
 
@@ -17,13 +16,11 @@ interface Post {
   rating: string;
 }
 
-const DanbooruGallery = () => {
+const DanbooruGallery = ({ currentSearch }: { currentSearch: string }) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
-  const [tags, setTags] = useState("");
-  const [currentSearch, setCurrentSearch] = useState("");
   const [hasMore, setHasMore] = useState(true);
   const { toast } = useToast();
 
@@ -38,7 +35,7 @@ const DanbooruGallery = () => {
     try {
       const response = await axios.get("https://danbooru.donmai.us/posts.json", {
         params: {
-          tags: `${searchTags} rating:safe`,
+          tags: searchTags,
           limit: POST_LIMIT,
           page: pageNum,
         },
@@ -75,11 +72,6 @@ const DanbooruGallery = () => {
     setHasMore(true);
   }, [currentSearch, fetchPosts]);
 
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setCurrentSearch(tags);
-  };
-
   const handleLoadMore = () => {
     const newPage = page + 1;
     setPage(newPage);
@@ -87,20 +79,8 @@ const DanbooruGallery = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-4 border border-zinc-200/80 rounded-2xl bg-white/60 shadow-lg backdrop-blur-sm">
-      <form onSubmit={handleSearch} className="flex gap-2">
-        <Input 
-          placeholder="Search tags (e.g. 'genshin_impact long_hair')"
-          value={tags}
-          onChange={(e) => setTags(e.target.value)}
-        />
-        <Button type="submit" disabled={loading}>
-          <Search className="mr-2 h-4 w-4" />
-          Search
-        </Button>
-      </form>
-      
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 min-h-[200px]">
+    <>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[200px]">
         {loading ? (
           Array.from({ length: POST_LIMIT }).map((_, i) => <Skeleton key={i} className="aspect-[3/4] w-full h-auto rounded-lg" />)
         ) : (
@@ -120,14 +100,14 @@ const DanbooruGallery = () => {
       )}
 
       {!loading && posts.length > 0 && hasMore && (
-        <div className="flex justify-center">
+        <div className="flex justify-center mt-6">
           <Button onClick={handleLoadMore} disabled={loadingMore}>
             {loadingMore ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             Load More
           </Button>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
