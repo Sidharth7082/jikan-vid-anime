@@ -83,22 +83,10 @@ const NavBar = ({
                       <span>Profile</span>
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="rounded-lg hover:!bg-[#3A374A] focus:!bg-[#3A374A] cursor-pointer p-2 text-sm">
-                    <History className="mr-3 h-5 w-5" />
-                    <span>Continue Watching</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="rounded-lg hover:!bg-[#3A374A] focus:!bg-[#3A374A] cursor-pointer p-2 text-sm">
-                    <Heart className="mr-3 h-5 w-5 text-pink-400" />
-                    <span>Watch List</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="rounded-lg hover:!bg-[#3A374A] focus:!bg-[#3A374A] cursor-pointer p-2 text-sm">
-                    <Bell className="mr-3 h-5 w-5" />
-                    <span>Notification</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="rounded-lg hover:!bg-[#3A374A] focus:!bg-[#3A374A] cursor-pointer p-2 text-sm">
-                    <FileText className="mr-3 h-5 w-5" />
-                    <span>MAL Import / Export</span>
-                  </DropdownMenuItem>
+                  
+                  
+                  
+                  
                   <DropdownMenuItem asChild className="rounded-lg hover:!bg-[#3A374A] focus:!bg-[#3A374A] cursor-pointer p-2 text-sm">
                     <Link to="/settings">
                       <Settings className="mr-3 h-5 w-5" />
