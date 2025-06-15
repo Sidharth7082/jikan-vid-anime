@@ -9,8 +9,15 @@ import {
 } from "@/components/ui/dialog"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 
-const avatarNames = ["Sidharth", "GamerBadman", "CoolDude", "AnimeFan", "Ninja", "Wizard"];
-const avatars = avatarNames.map(name => `https://api.multiavatar.com/${encodeURIComponent(name)}.svg?apikey=gIFEI2I822522S`);
+const avatarData = [
+  { name: "Carter", url: "/lovable-uploads/91c3eef4-0329-4be7-9b41-22b108a9830b.png" },
+  { name: "Mink", url: "/lovable-uploads/fe32b5d9-ba40-46e0-adef-eb732ded26a8.png" },
+  { name: "Hero", url: "/lovable-uploads/50d688e8-acdb-424c-a21d-21146927a9d9.png" },
+  { name: "Sora", url: "/lovable-uploads/26ec4803-dba1-4f02-811d-b082746d02d7.png" },
+];
+
+const avatarNames = avatarData.map(a => a.name);
+const avatars = avatarData.map(a => a.url);
 
 interface AvatarPickerDialogProps {
   children: React.ReactNode;
@@ -25,7 +32,7 @@ export function AvatarPickerDialog({ children, onAvatarSelect }: AvatarPickerDia
         <DialogHeader>
           <DialogTitle>Choose your Avatar</DialogTitle>
         </DialogHeader>
-        <div className="grid grid-cols-3 gap-4 py-4">
+        <div className="grid grid-cols-2 gap-4 py-4">
           {avatars.map((url, index) => (
             <DialogClose asChild key={url}>
               <button onClick={() => onAvatarSelect(url)} className="flex flex-col items-center gap-2 group">
