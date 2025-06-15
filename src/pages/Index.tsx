@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from "react";
 import { fetchTopAnime, fetchAnimeDetails } from "@/lib/api";
 import AnimeCard from "@/components/AnimeCard";
@@ -15,6 +14,7 @@ import AppSidebar from "@/components/AppSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import WaifuPicsGallery from "@/components/WaifuPicsGallery";
 import NavBar from "@/components/NavBar";
+import Footer from "@/components/Footer";
 
 // Loader overlay for async actions
 const LoaderOverlay = ({ show }: { show: boolean }) =>
@@ -215,30 +215,7 @@ const Index = () => {
           name={waifuName}
         />
         {/* You can add other sections like Seasonal/Random here */}
-        {/* Footer */}
-        <footer className="w-full py-8 text-center text-neutral-500 text-sm bg-gradient-to-t from-[#e5e0ff99] via-transparent to-transparent backdrop-blur-lg shadow-inner mt-auto">
-          <span className="font-bold tracking-wide text-[#7D36FF] drop-shadow mx-1">
-            captureordie
-          </span>
-          — Powered by{" "}
-          <a
-            href="https://jikan.moe/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="story-link underline font-bold text-purple-700 hover:text-purple-500 transition mx-1"
-          >
-            Jikan API
-          </a>
-          {" | Streaming by "}
-          <a
-            href="https://vidsrc.to/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="story-link underline font-bold text-purple-700 hover:text-purple-500 transition mx-1"
-          >
-            Vidsrc
-          </a>
-        </footer>
+        <Footer />
       </div>
       {/* Mobile Sidebar Trigger */}
       <SidebarTrigger className="fixed top-4 left-4 z-[100] md:hidden bg-white/80 rounded-full p-2 shadow-lg ring-1 ring-zinc-900 hover:bg-purple-200/90 hover:text-purple-800 transition" />

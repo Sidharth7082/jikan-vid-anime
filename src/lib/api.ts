@@ -1,4 +1,3 @@
-
 const BASE_URL = "https://api.jikan.moe/v4";
 
 export async function fetchTopAnime(page = 1) {
@@ -21,4 +20,12 @@ export async function fetchAnimeDetails(id: number | string) {
   if (!res.ok) throw new Error("Failed to fetch anime details");
   const data = await res.json();
   return data.data;
+}
+
+export async function fetchAnimeByLetter(letter: string, page = 1) {
+  if (letter === "all") return fetchTopAnime(page);
+  const res = await fetch(`${BASE_URL}/anime?letter=${letter}&page=${page}&order_by=title&sort=asc`);
+  if (!res.ok) throw new Error(`Failed to fetch anime starting with letter ${letter}`);
+  const data = await res.json();
+  return data;
 }
