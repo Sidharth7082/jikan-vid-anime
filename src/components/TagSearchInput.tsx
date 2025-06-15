@@ -108,31 +108,28 @@ const TagSearchInput: React.FC<TagSearchInputProps> = ({ value, onChange, id }) 
         />
         {open && (
             <CommandList className="absolute z-50 mt-1 w-full rounded-md border bg-popover text-popover-foreground shadow-lg">
-              {loading ? (
-                <CommandItem disabled className="p-2 flex items-center justify-center text-sm text-muted-foreground">
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  <span>Loading...</span>
-                </CommandItem>
-              ) : (
-                <>
-                  <CommandEmpty>No results found for "{getCurrentTag()}"</CommandEmpty>
-                  <CommandGroup>
-                    {suggestions.map(tag => (
-                      <CommandItem
-                        key={tag.name}
-                        value={tag.name}
-                        onSelect={() => handleSelect(tag.name)}
-                        className="flex justify-between items-center cursor-pointer"
-                      >
-                        <span className="truncate">{tag.name.replace(/_/g, ' ')}</span>
-                        <span className="text-muted-foreground text-xs whitespace-nowrap ml-4">
-                          {tag.post_count > 1000 ? `${(tag.post_count / 1000).toFixed(1)}k` : tag.post_count.toLocaleString()}
-                        </span>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </>
-              )}
+              <CommandEmpty>No results found for "{getCurrentTag()}"</CommandEmpty>
+              <CommandGroup>
+                {loading && (
+                  <CommandItem disabled className="p-2 flex items-center justify-center text-sm text-muted-foreground">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <span>Loading...</span>
+                  </CommandItem>
+                )}
+                {!loading && suggestions.map(tag => (
+                  <CommandItem
+                    key={tag.name}
+                    value={tag.name}
+                    onSelect={() => handleSelect(tag.name)}
+                    className="flex justify-between items-center cursor-pointer"
+                  >
+                    <span className="truncate">{tag.name.replace(/_/g, ' ')}</span>
+                    <span className="text-muted-foreground text-xs whitespace-nowrap ml-4">
+                      {tag.post_count > 1000 ? `${(tag.post_count / 1000).toFixed(1)}k` : tag.post_count.toLocaleString()}
+                    </span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
             </CommandList>
         )}
       </Command>
