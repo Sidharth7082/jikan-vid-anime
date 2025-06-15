@@ -1,21 +1,15 @@
+
 import React, { useEffect, useState, useCallback } from "react";
-import { Link } from "react-router-dom";
 import { fetchTopAnime, fetchAnimeDetails } from "@/lib/api";
-import AnimeCard from "@/components/AnimeCard";
 import AnimeDetailModal from "@/components/AnimeDetailModal";
 import { toast } from "@/hooks/use-toast";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Star, Smile } from "lucide-react";
-import { cn } from "@/lib/utils";
 import WaifuGifModal from "@/components/WaifuGifModal";
-import { useWaifuApiToken } from "@/hooks/useWaifuApiToken";
-import axios from "axios";
-import { Button } from "@/components/ui/button";
-import AppSidebar from "@/components/AppSidebar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import WaifuPicsGallery from "@/components/WaifuPicsGallery";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import HeroBanner from "@/components/HeroBanner";
+import TopAnimeSection from "@/components/TopAnimeSection";
+import ImageGallerySection from "@/components/ImageGallerySection";
 
 // Loader overlay for async actions
 const LoaderOverlay = ({ show }: { show: boolean }) =>
@@ -40,8 +34,6 @@ const Index = () => {
   const [waifuLoading, setWaifuLoading] = useState(false);
 
   // For future: you may introduce tabs for 'seasonal', 'random', etc.
-
-  const { token, setToken } = useWaifuApiToken();
 
   const pickRandomFeaturedAnime = useCallback((list: any[]) => {
     if (list && list.length > 0) {
@@ -101,107 +93,24 @@ const Index = () => {
       <div className="min-h-screen flex flex-col w-full bg-gradient-to-br from-[#e0e0ff]/60 via-[#f8f4fa]/60 to-[#faf6fb]/90">
         <NavBar onSearch={handleSearchResult} />
 
-        {/* Hero Banner */}
-        <section
-          className="relative flex flex-col justify-center min-h-[340px] md:min-h-[380px] w-full overflow-hidden"
-          style={{
-            background: featuredAnime?.images?.jpg?.large_image_url
-              ? `url(${featuredAnime.images.jpg.large_image_url}) center/cover no-repeat`
-              : "#f8eaff",
-          }}
-        >
-          {/* Overlay blur */}
-          <div className="absolute inset-0 bg-zinc-900/50 backdrop-blur-sm" />
-          {/* Hero Content */}
-          <div className="relative z-10 px-4 py-12 sm:py-20 max-w-5xl mx-auto flex flex-col gap-4">
-            <div className="text-[#87f] font-semibold text-base flex items-center gap-2 mb-2">
-              <Star className="w-5 h-5 text-[#87f]" />
-              Featured Random Pick
-            </div>
-            <div className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">{featuredAnime?.title || "Tish Tash"}</div>
-            <div className="text-lg md:text-xl text-white/90 font-medium drop-shadow-sm max-w-2xl">
-              {featuredAnime?.synopsis
-                ? featuredAnime.synopsis.length > 220
-                  ? featuredAnime.synopsis.substring(0, 220) + "..."
-                  : featuredAnime.synopsis
-                : "Growing up can be tough, especially when you're a family of bears and your younger brother is a bit of a wild animal. Luckily Tish has a ridiculously huge imagination and a larger than life, imaginary friend Tash. No matter what trouble..."}
-            </div>
-            <div className="flex items-center gap-4 text-white/80 font-medium mt-1">
-              <span>{featuredAnime?.year || 2020}</span>
-              <span>·</span>
-              <span>{featuredAnime?.episodes ? `${featuredAnime.episodes} episodes` : "26 episodes"}</span>
-            </div>
-            <div className="flex gap-4 mt-6">
-              <Button
-                className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-500 hover:scale-105 px-7 py-2.5 text-lg rounded-xl font-bold shadow-md"
-                onClick={() => featuredAnime && handleCardClick(featuredAnime)}
-                disabled={!featuredAnime}
-              >
-                View Details
-              </Button>
-              <Button
-                className="bg-white/90 text-purple-700 border border-purple-400 hover:bg-purple-50 hover:scale-105 px-7 py-2.5 text-lg rounded-xl font-bold shadow"
-                onClick={() => pickRandomFeaturedAnime(animeList)}
-                variant="outline"
-              >
-                Get Another
-              </Button>
-            </div>
-          </div>
-        </section>
+        <HeroBanner
+          featuredAnime={featuredAnime}
+          animeList={animeList}
+          onViewDetailsClick={handleCardClick}
+          onGetAnotherClick={pickRandomFeaturedAnime}
+        />
 
         {/* Main Content */}
         <main className="flex-1 w-full pb-10">
           <LoaderOverlay show={loading || waifuLoading} />
 
-          {/* Top Anime Section */}
-          <div id="top-anime" className="max-w-7xl mx-auto w-full px-3 sm:px-8 pb-2">
-            <div className="flex items-center justify-between mt-12 mb-6">
-              <div className="flex items-center gap-3">
-                <Star className="text-purple-600" />
-                <h2 className="text-2xl md:text-3xl font-extrabold text-zinc-900 tracking-tight drop-shadow">Top Anime</h2>
-              </div>
-              <Link to="/browse/all" className="text-purple-700 font-medium underline underline-offset-2 transition hover:text-purple-500">View All →</Link>
-            </div>
-            {loading ? (
-              <section className="mt-4 grid gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-                {[...Array(12)].map((_, idx) => (
-                  <Skeleton
-                    key={idx}
-                    className="aspect-[2/3] rounded-2xl w-full h-64 bg-gradient-to-b from-zinc-100 to-zinc-200 animate-pulse"
-                  />
-                ))}
-              </section>
-            ) : (
-              <section className={cn(
-                "mt-2 grid gap-7 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
-              )}>
-                {animeList.slice(1, 13).map((anime: any) => (
-                  <AnimeCard
-                    key={anime.mal_id}
-                    anime={anime}
-                    onClick={() => handleCardClick(anime)}
-                    className="shadow-md rounded-2xl hover:scale-105 transition group bg-white"
-                    badgeClass="bg-gradient-to-r from-yellow-400 to-orange-400 text-white drop-shadow"
-                  />
-                ))}
-              </section>
-            )}
-          </div>
+          <TopAnimeSection
+            loading={loading}
+            animeList={animeList}
+            onCardClick={handleCardClick}
+          />
 
-          {/* Image Gallery Section */}
-          <div id="image" className="max-w-7xl mx-auto w-full px-3 sm:px-8 pb-10 pt-8">
-            <div className="flex items-center justify-between mt-12 mb-6">
-              <div className="flex items-center gap-3">
-                <Smile className="text-purple-600 w-7 h-7" />
-                <h2 className="text-2xl md:text-3xl font-extrabold text-zinc-900 tracking-tight drop-shadow">Image Gallery</h2>
-              </div>
-              <a href="https://waifu.pics/docs" target="_blank" rel="noopener noreferrer" className="text-purple-700 font-medium underline underline-offset-2 transition hover:text-purple-500">
-                Powered by waifu.pics →
-              </a>
-            </div>
-            <WaifuPicsGallery />
-          </div>
+          <ImageGallerySection />
         </main>
 
         <AnimeDetailModal
