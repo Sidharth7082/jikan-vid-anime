@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Twitter, Reddit, Discord } from 'lucide-react';
+import { Twitter, Globe, MessageCircle } from 'lucide-react';
 import AlphabeticalFilter from './AlphabeticalFilter';
 
 const SocialIcon = ({ href, children }: { href: string; children: React.ReactNode }) => (
@@ -20,13 +20,13 @@ const Footer = () => {
                     </Link>
                     <div className="flex items-center space-x-5">
                         <SocialIcon href="https://discord.com">
-                            <Discord className="h-6 w-6" />
+                            <MessageCircle className="h-6 w-6" />
                         </SocialIcon>
                         <SocialIcon href="https://twitter.com">
                             <Twitter className="h-6 w-6" />
                         </SocialIcon>
                         <SocialIcon href="https://reddit.com">
-                            <Reddit className="h-6 w-6" />
+                            <Globe className="h-6 w-6" />
                         </SocialIcon>
                     </div>
                 </div>
@@ -50,4 +50,3 @@ const Footer = () => {
 };
 
 export default Footer;
-
