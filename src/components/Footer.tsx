@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Twitter, Globe, MessageCircle } from 'lucide-react';
+import { Twitter, Globe, Instagram } from 'lucide-react';
 import AlphabeticalFilter from './AlphabeticalFilter';
 
 const SocialIcon = ({ href, children }: { href: string; children: React.ReactNode }) => (
@@ -19,13 +19,13 @@ const Footer = () => {
                         captureordie
                     </Link>
                     <div className="flex items-center space-x-5">
-                        <SocialIcon href="https://discord.com">
-                            <MessageCircle className="h-6 w-6" />
+                        <SocialIcon href="https://www.instagram.com/captureordie/">
+                            <Instagram className="h-6 w-6" />
                         </SocialIcon>
-                        <SocialIcon href="https://twitter.com">
+                        <SocialIcon href="https://x.com/captureordie04">
                             <Twitter className="h-6 w-6" />
                         </SocialIcon>
-                        <SocialIcon href="https://reddit.com">
+                        <SocialIcon href="https://www.reddit.com/user/GuiltyAppointment1/">
                             <Globe className="h-6 w-6" />
                         </SocialIcon>
                     </div>

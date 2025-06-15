@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { Link, useNavigate } from "react-router-dom";
-import { Home, User, History, Heart, Bell, FileText, Settings, LogOut } from "lucide-react";
+import { Home, User, History, Heart, Bell, FileText, Settings, LogOut, Instagram } from "lucide-react";
 import AnimeSearchBar from "@/components/AnimeSearchBar";
 import { Button } from "@/components/ui/button";
 import {
@@ -110,9 +110,11 @@ const NavBar = ({ onSearch }: { onSearch: (v: any) => void }) => {
                     <FileText className="mr-3 h-5 w-5" />
                     <span>MAL Import / Export</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="rounded-lg hover:!bg-[#3A374A] focus:!bg-[#3A374A] cursor-pointer p-2 text-sm">
-                    <Settings className="mr-3 h-5 w-5" />
-                    <span>Settings</span>
+                  <DropdownMenuItem asChild className="rounded-lg hover:!bg-[#3A374A] focus:!bg-[#3A374A] cursor-pointer p-2 text-sm">
+                    <Link to="/settings">
+                      <Settings className="mr-3 h-5 w-5" />
+                      <span>Settings</span>
+                    </Link>
                   </DropdownMenuItem>
                 </div>
                 <DropdownMenuSeparator className="bg-[#3A374A]/50" />
