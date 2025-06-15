@@ -49,7 +49,7 @@ const NavBar = ({ onSearch }: { onSearch: (v: any) => void }) => {
           </Link>
           <a href="/#top-anime" className="hover:underline text-zinc-700 font-medium transition">Top Anime</a>
           <a href="/#seasonal" className="hover:underline text-zinc-700 font-medium transition">Seasonal</a>
-          <a href="/#random" className="hover:underline text-zinc-700 font-medium transition">Random</a>
+          <Link to="/gifs" className="hover:underline text-zinc-700 font-medium transition">GIFs</Link>
           <a href="/#image" className="hover:underline text-zinc-700 font-medium transition">Image</a>
         </div>
         <div className="flex items-center gap-4">
