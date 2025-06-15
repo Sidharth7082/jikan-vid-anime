@@ -59,7 +59,11 @@ const DanbooruGallery = ({ currentSearch }: { currentSearch: string }) => {
   useEffect(() => {
     if (searchRef.current !== currentSearch) {
       searchRef.current = currentSearch;
-      setPage(1);
+      if (page === 1) {
+        fetchPosts(currentSearch, 1);
+      } else {
+        setPage(1);
+      }
     } else {
       fetchPosts(currentSearch, page);
     }

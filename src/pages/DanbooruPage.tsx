@@ -7,14 +7,23 @@ import DanbooruGallery from "@/components/DanbooruGallery";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const DanbooruPage = () => {
   const [tags, setTags] = useState("");
+  const [rating, setRating] = useState("all");
   const [currentSearch, setCurrentSearch] = useState("");
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setCurrentSearch(tags);
+    let searchString = tags;
+    if (rating === "sfw") {
+      searchString = `${tags} rating:safe`;
+    } else if (rating === "nsfw") {
+      searchString = `${tags} rating:questionable,explicit`;
+    }
+    setCurrentSearch(searchString.trim());
   };
 
   return (
@@ -33,14 +42,36 @@ const DanbooruPage = () => {
               {/* Left Sidebar */}
               <aside className="md:sticky top-24 h-fit">
                 <div className="p-4 border border-zinc-200/80 rounded-2xl bg-white/60 shadow-lg backdrop-blur-sm space-y-4">
-                  <h3 className="font-bold text-lg text-zinc-800">Search Tags</h3>
-                  <form onSubmit={handleSearch} className="flex flex-col gap-2">
-                    <Input 
-                      placeholder="e.g. 'genshin_impact long_hair'"
-                      value={tags}
-                      onChange={(e) => setTags(e.target.value)}
-                    />
-                    <Button type="submit">
+                  <h3 className="font-bold text-lg text-zinc-800">Search Options</h3>
+                  <form onSubmit={handleSearch} className="flex flex-col gap-4">
+                    <div>
+                      <Label htmlFor="tags-input" className="font-semibold text-zinc-700 mb-2 block">Tags</Label>
+                      <Input 
+                        id="tags-input"
+                        placeholder="e.g. 'genshin_impact long_hair'"
+                        value={tags}
+                        onChange={(e) => setTags(e.target.value)}
+                      />
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-zinc-700 mb-2">Rating</h4>
+                      <RadioGroup value={rating} onValueChange={setRating} className="space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="all" id="r-all" />
+                          <Label htmlFor="r-all">All</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="sfw" id="r-sfw" />
+                          <Label htmlFor="r-sfw">SFW</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="nsfw" id="r-nsfw" />
+                          <Label htmlFor="r-nsfw">NSFW</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                    <Button type="submit" className="w-full">
                       <Search className="mr-2 h-4 w-4" />
                       Search
                     </Button>
