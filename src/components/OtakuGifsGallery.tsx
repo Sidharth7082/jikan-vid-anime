@@ -13,9 +13,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
+import { Loader2, ZoomIn } from "lucide-react";
+import { GifDetailModal } from "./GifDetailModal";
 
 type Source = "otakugifs" | "nekos.best";
+
+interface Gif {
+  url: string;
+  animeName?: string;
+  sourceUrl?: string;
+}
 
 const GIF_COUNT = 12;
 
@@ -24,10 +31,11 @@ const OtakuGifsGallery = () => {
   const [nsfw, setNsfw] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [gifs, setGifs] = useState<string[]>([]);
+  const [gifs, setGifs] = useState<Gif[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [loadingGifs, setLoadingGifs] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [selectedGif, setSelectedGif] = useState<Gif | null>(null);
   const { toast } = useToast();
 
   const fetchCategories = useCallback(async (currentSource: Source, isNsfw: boolean) => {
@@ -86,15 +94,20 @@ const OtakuGifsGallery = () => {
       
       const responses = await Promise.all(gifPromises);
       
-      const newGifs = responses
+      const newGifs: Gif[] = responses
         .map(res => {
           if (currentSource === 'otakugifs') {
-            return res.data.url;
+            return { url: res.data.url };
           } else { // nekos.best
-            return res.data.results[0].url;
+            const result = res.data.results[0];
+            return {
+              url: result.url,
+              animeName: result.anime_name,
+              sourceUrl: result.source_url,
+            };
           }
         })
-        .filter((url, index, self) => url && self.indexOf(url) === index);
+        .filter((gif, index, self) => gif.url && self.findIndex(g => g.url === gif.url) === index);
 
       setGifs(prev => loadMore ? [...prev, ...newGifs] : newGifs);
     } catch (error) {
@@ -124,6 +137,10 @@ const OtakuGifsGallery = () => {
     if (selectedCategory) {
       fetchGifs(selectedCategory, source, true);
     }
+  };
+
+  const handleGifClick = (gif: Gif) => {
+    setSelectedGif(gif);
   };
 
   return (
@@ -167,10 +184,12 @@ const OtakuGifsGallery = () => {
         {loadingGifs ? (
           Array.from({ length: GIF_COUNT }).map((_, i) => <Skeleton key={i} className="aspect-square w-full h-auto rounded-lg" />)
         ) : (
-          gifs.map((url, i) => (
-            <div key={`${url}-${i}`} className="group aspect-square bg-black/5 rounded-lg overflow-hidden border relative">
-              <img src={url} alt={selectedCategory} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"/>
-              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          gifs.map((gif, i) => (
+            <div key={`${gif.url}-${i}`} className="group aspect-square bg-black/5 rounded-lg overflow-hidden border relative cursor-pointer" onClick={() => handleGifClick(gif)}>
+              <img src={gif.url} alt={gif.animeName || selectedCategory} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"/>
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                <ZoomIn className="text-white/80 w-10 h-10 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
             </div>
           ))
         )}
@@ -184,6 +203,12 @@ const OtakuGifsGallery = () => {
           </Button>
         </div>
       )}
+
+      <GifDetailModal 
+        gif={selectedGif} 
+        open={!!selectedGif} 
+        onOpenChange={(open) => !open && setSelectedGif(null)}
+      />
     </div>
   );
 };
