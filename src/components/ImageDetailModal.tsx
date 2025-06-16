@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ExternalLink, Download, Loader2 } from 'lucide-react';
+import { ExternalLink, Download, Loader2, Eye } from 'lucide-react';
 import { Button } from './ui/button';
 import { useToast } from './ui/use-toast';
 import axios from 'axios';
@@ -104,6 +104,13 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
       setIsDownloading(false);
     }
   };
+
+  const handleViewFullSize = () => {
+    if (imageUrl) {
+      window.open(imageUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   const handleTagClickAndClose = (tag: string) => {
     onTagClick(tag);
     onOpenChange(false);
@@ -116,10 +123,16 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
           <div className="h-full flex flex-col">
             <div className="p-6 border-b border-zinc-800">
                <h3 className="text-2xl font-bold mb-4">Post Details</h3>
-               <Button variant="outline" onClick={handleDownload} disabled={isDownloading} size="sm" className="bg-transparent border-zinc-700 hover:bg-zinc-800 hover:text-white">
-                   {isDownloading ? <Loader2 size={16} className="animate-spin mr-2" /> : <Download size={16} className="mr-2" />}
-                   {isDownloading ? 'Downloading...' : 'Download'}
-               </Button>
+               <div className="flex flex-col gap-2">
+                 <Button variant="outline" onClick={handleDownload} disabled={isDownloading} size="sm" className="bg-transparent border-zinc-700 hover:bg-zinc-800 hover:text-white">
+                     {isDownloading ? <Loader2 size={16} className="animate-spin mr-2" /> : <Download size={16} className="mr-2" />}
+                     {isDownloading ? 'Downloading...' : 'Download'}
+                 </Button>
+                 <Button variant="outline" onClick={handleViewFullSize} size="sm" className="bg-transparent border-zinc-700 hover:bg-zinc-800 hover:text-white">
+                     <Eye size={16} className="mr-2" />
+                     View Full Size
+                 </Button>
+               </div>
             </div>
             <ScrollArea className="h-full">
               <div className="p-6">
