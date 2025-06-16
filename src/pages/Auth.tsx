@@ -1,0 +1,103 @@
+
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SignInForm } from "@/components/auth/SignInForm";
+import { SignUpForm } from "@/components/auth/SignUpForm";
+import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
+import { UpdatePasswordForm } from "@/components/auth/UpdatePasswordForm";
+
+const AuthPage = () => {
+  const [loading, setLoading] = useState(false);
+  const [showResetView, setShowResetView] = useState(false);
+  const [showUpdatePassword, setShowUpdatePassword] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setShowUpdatePassword(true);
+        // Reset the URL to avoid showing the recovery token
+        navigate('/auth', { replace: true });
+      } else if (session && event !== 'USER_UPDATED') {
+        navigate("/");
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [navigate]);
+
+  const handleGuestLogin = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.signInAnonymously();
+    if (error) {
+      toast({
+        title: "Guest login failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({ title: "Signed in as guest!" });
+      navigate("/");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#e0e0ff]/60 via-[#f8f4fa]/60 to-[#faf6fb]/90 p-4">
+      {showUpdatePassword ? <UpdatePasswordForm setShowUpdatePassword={setShowUpdatePassword} /> : (
+        <Card className="w-full max-w-md shadow-2xl border-purple-100">
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl font-bold text-purple-700 tracking-tight">
+              captureordie
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {showResetView ? (
+               <ResetPasswordForm setShowResetView={setShowResetView} />
+            ) : (
+              <Tabs defaultValue="signin" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="signin">Sign In</TabsTrigger>
+                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                </TabsList>
+                <TabsContent value="signin" className="pt-6">
+                  <SignInForm setShowResetView={setShowResetView} />
+                </TabsContent>
+                <TabsContent value="signup" className="pt-6">
+                  <SignUpForm />
+                </TabsContent>
+              </Tabs>
+            )}
+            
+            {!showResetView && (
+              <>
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">
+                      Or
+                    </span>
+                  </div>
+                </div>
+                <Button variant="outline" onClick={handleGuestLogin} disabled={loading} className="w-full">
+                  Continue as Guest
+                </Button>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+export default AuthPage;

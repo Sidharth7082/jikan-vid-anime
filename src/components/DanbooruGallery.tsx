@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,6 +18,7 @@ interface Post {
   id: number;
   preview_file_url: string;
   large_file_url: string;
+  file_url: string;
   tag_string_general: string;
   tag_string_artist: string;
   tag_string_copyright: string;
