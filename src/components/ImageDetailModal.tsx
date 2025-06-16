@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ExternalLink, Download, Loader2, Eye } from 'lucide-react';
+import { ExternalLink, Download, Loader2, Eye, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { Button } from './ui/button';
 import { useToast } from './ui/use-toast';
 import axios from 'axios';
@@ -63,6 +63,7 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
   onTagClick
 }) => {
   const [isDownloading, setIsDownloading] = useState(false);
+  const [imageScale, setImageScale] = useState(1);
   const {
     toast
   } = useToast();
@@ -111,6 +112,18 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
     }
   };
 
+  const handleZoomIn = () => {
+    setImageScale(prev => Math.min(prev + 0.25, 5));
+  };
+
+  const handleZoomOut = () => {
+    setImageScale(prev => Math.max(prev - 0.25, 0.25));
+  };
+
+  const handleResetZoom = () => {
+    setImageScale(1);
+  };
+
   const handleTagClickAndClose = (tag: string) => {
     onTagClick(tag);
     onOpenChange(false);
@@ -134,6 +147,26 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
                  </Button>
                </div>
             </div>
+            <div className="p-6 border-b border-zinc-800">
+              <h4 className="text-lg font-semibold mb-3">Image Controls</h4>
+              <div className="flex flex-col gap-2">
+                <Button variant="outline" onClick={handleZoomIn} size="sm" className="bg-transparent border-zinc-700 hover:bg-zinc-800 hover:text-white">
+                  <ZoomIn size={16} className="mr-2" />
+                  Zoom In
+                </Button>
+                <Button variant="outline" onClick={handleZoomOut} size="sm" className="bg-transparent border-zinc-700 hover:bg-zinc-800 hover:text-white">
+                  <ZoomOut size={16} className="mr-2" />
+                  Zoom Out
+                </Button>
+                <Button variant="outline" onClick={handleResetZoom} size="sm" className="bg-transparent border-zinc-700 hover:bg-zinc-800 hover:text-white">
+                  <RotateCcw size={16} className="mr-2" />
+                  Reset Zoom
+                </Button>
+                <div className="text-sm text-zinc-400 mt-2">
+                  Scale: {Math.round(imageScale * 100)}%
+                </div>
+              </div>
+            </div>
             <ScrollArea className="h-full">
               <div className="p-6">
                 <TagSection title="Artist" tags={post.tag_string_artist} onTagClick={handleTagClickAndClose} />
@@ -151,7 +184,11 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
                   <img
                     src={imageUrl}
                     alt={post.tag_string_general}
-                    className="max-w-none"
+                    className="max-w-none transition-transform duration-200 ease-out"
+                    style={{ 
+                      transform: `scale(${imageScale})`,
+                      imageRendering: imageScale > 1 ? 'pixelated' : 'auto'
+                    }}
                   />
                 ) : (
                   <div className="text-white">Image not available</div>
