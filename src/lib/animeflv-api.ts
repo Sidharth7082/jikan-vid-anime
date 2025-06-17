@@ -38,7 +38,3 @@ export async function getVideoSources(animeId: string, episodeNumber: number): P
     return [];
   }
 }
-
-export function getVidSrcUrl(malId: number, episodeNumber: number): string {
-  return `https://vidsrc.to/embed/tv/${malId}/${episodeNumber}`;
-}

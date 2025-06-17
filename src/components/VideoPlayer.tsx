@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
-import { Loader2, Play, ExternalLink } from 'lucide-react';
-import { VideoSource, getVideoSources, getVidSrcUrl, searchAnimeFlv } from '@/lib/animeflv-api';
+import { Loader2, Play } from 'lucide-react';
+import { VideoSource, getVideoSources, searchAnimeFlv } from '@/lib/animeflv-api';
 import { useToast } from './ui/use-toast';
 
 interface ConsolidatedSource extends VideoSource {
@@ -39,38 +39,26 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     setCurrentSource(null);
 
     try {
-      // First, search for anime in AnimeFlv to get the ID
+      // Search for anime in AnimeFlv to get the ID
       const searchResults = await searchAnimeFlv(animeTitle);
       const animeFlvResult = searchResults[0]; // Take first result
       
-      let consolidatedSources: ConsolidatedSource[] = [];
-
-      // Add VidSrc source (highest priority)
-      const vidSrcUrl = getVidSrcUrl(animeMalId, episodeNumber);
-      consolidatedSources.push({
-        id: 'vidsrc',
-        name: 'VidSrc.to',
-        type: 'embed',
-        url: vidSrcUrl,
-        priority: 1
-      });
-
-      // Fetch AnimeFlv sources if we found a match
-      if (animeFlvResult) {
-        setAnimeFlvId(animeFlvResult.id);
-        const animeFlvSources = await getVideoSources(animeFlvResult.id, episodeNumber);
-        
-        // Add AnimeFlv sources with lower priority
-        animeFlvSources.forEach((source, index) => {
-          consolidatedSources.push({
-            id: `animeflv-${index}`,
-            name: `AnimeFlv ${source.type.toUpperCase()} ${index + 1}`,
-            type: source.type,
-            url: source.url,
-            priority: source.type === 'embed' ? 2 : 3
-          });
-        });
+      if (!animeFlvResult) {
+        setStatus("Anime not found in AnimeFlv database.");
+        return;
       }
+
+      setAnimeFlvId(animeFlvResult.id);
+      const animeFlvSources = await getVideoSources(animeFlvResult.id, episodeNumber);
+      
+      // Create consolidated sources from AnimeFlv API
+      const consolidatedSources: ConsolidatedSource[] = animeFlvSources.map((source, index) => ({
+        id: `animeflv-${index}`,
+        name: `Source ${index + 1} (${source.type.toUpperCase()})`,
+        type: source.type,
+        url: source.url,
+        priority: source.type === 'embed' ? 1 : source.type === 'direct' ? 2 : 3
+      }));
 
       // Sort by priority
       consolidatedSources.sort((a, b) => a.priority - b.priority);
