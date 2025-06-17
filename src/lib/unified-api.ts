@@ -1,13 +1,9 @@
-
-const ANIMEFLV_API_BASE = 'https://animeflv-api-backend.onrender.com';
-const VIDFAST_EMBED_BASE = 'https://vidfast.pro';
+const ANIMEFLV_API_BASE = 'https://animeflv.ahmedrangel.com/api';
 
 export interface UnifiedItem {
-  source_type: 'Jikan' | 'IMDbAPI' | 'TMDB';
-  content_type: 'anime' | 'movie' | 'tvSeries';
+  source_type: 'Jikan';
+  content_type: 'anime';
   mal_id?: string;
-  imdb_id?: string;
-  tmdb_id?: string;
   title: string;
   poster?: string;
   image_url?: string;
@@ -20,93 +16,139 @@ export interface UnifiedItem {
 }
 
 export interface DetailedContent extends UnifiedItem {
-  animeflv_id?: string;
+  animeflv_id?: string; // This will be the slug
 }
 
 export interface VideoSource {
-  type: 'embed' | 'direct';
   url: string;
+  type: 'embed' | 'direct';
+  quality?: string;
   provider: string;
 }
 
-export async function fetchUnifiedDetail(sourceType: string, itemId: string, contentType?: string): Promise<DetailedContent> {
-  let url = `${ANIMEFLV_API_BASE}/api/unified-detail/${sourceType}/${itemId}`;
-  if (contentType && sourceType === 'TMDB') {
-    url += `?content_type_param=${contentType}`;
+async function searchAnimeOnAnimeFLV(query: string): Promise<any[]> {
+  const searchUrl = `${ANIMEFLV_API_BASE}/search?query=${encodeURIComponent(query)}`;
+  console.log(`Searching AnimeFLV for: ${query}`);
+  try {
+    const response = await fetch(searchUrl);
+    if (!response.ok) {
+      throw new Error(`AnimeFLV search failed with status: ${response.status}`);
+    }
+    const data = await response.json();
+    if (!data.success || !data.data || !data.data.media) {
+      console.warn('AnimeFLV search returned no media:', data);
+      return [];
+    }
+    return data.data.media;
+  } catch (error) {
+    console.error('Error in searchAnimeOnAnimeFLV:', error);
+    return [];
+  }
+}
+
+export async function fetchUnifiedDetail(sourceType: string, itemId: string, title: string): Promise<DetailedContent> {
+  if (sourceType !== 'Jikan' || !title) {
+    throw new Error('This function currently only supports searching by title from a Jikan source.');
+  }
+
+  console.log(`Attempting to find '${title}' on AnimeFLV...`);
+  const searchResults = await searchAnimeOnAnimeFLV(title);
+
+  if (searchResults.length === 0) {
+    throw new Error(`No results found for "${title}" on AnimeFLV.`);
+  }
+
+  const bestMatch = searchResults[0];
+  const slug = bestMatch.slug;
+
+  if (!slug) {
+    throw new Error(`Could not find a valid slug for "${title}" on AnimeFLV.`);
   }
   
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch unified detail: ${response.statusText}`);
+  console.log(`Found slug '${slug}' for '${title}'. Fetching details...`);
+  const detailUrl = `${ANIMEFLV_API_BASE}/anime/${slug}`;
+
+  try {
+    const response = await fetch(detailUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch details from AnimeFLV for slug: ${slug}`);
+    }
+    const detailsData = await response.json();
+
+    if (!detailsData.success) {
+      throw new Error(`AnimeFLV API returned success=false for slug: ${slug}`);
+    }
+    
+    const animeData = detailsData.data;
+    
+    const unifiedDetails: DetailedContent = {
+      source_type: 'Jikan',
+      content_type: 'anime',
+      mal_id: itemId,
+      animeflv_id: slug, // The slug is our AnimeFLV ID
+      title: animeData.title,
+      poster: animeData.cover,
+      synopsis: animeData.synopsis,
+      episodes_count: animeData.episodes?.length || 0,
+      status: animeData.status,
+      score: parseFloat(animeData.rating) || undefined,
+      genres: animeData.genres,
+      release_year: parseInt(animeData.debut) || undefined
+    };
+    
+    console.log('Successfully unified details from AnimeFLV:', unifiedDetails);
+    return unifiedDetails;
+
+  } catch (error) {
+    console.error('Error fetching or processing AnimeFLV details:', error);
+    throw error;
   }
-  
-  return await response.json();
 }
 
 export async function fetchVideoSources(animeFlvId: string, episodeNumber: number): Promise<VideoSource[]> {
+  if (!animeFlvId) {
+    console.error('No AnimeFLV ID (slug) provided to fetchVideoSources');
+    return [];
+  }
+
+  const url = `${ANIMEFLV_API_BASE}/anime/${animeFlvId}/episode/${episodeNumber}`;
+  console.log('Fetching video sources from:', url);
+  
   try {
-    const response = await fetch(`${ANIMEFLV_API_BASE}/api/video-sources/${animeFlvId}/${episodeNumber}`);
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Failed to fetch video sources: ${response.statusText}`);
     }
     
     const data = await response.json();
-    return data.sources?.map((source: any) => ({
-      ...source,
-      provider: 'Your API'
-    })) || [];
+    console.log('Video sources response:', data);
+    
+    if (!data.success || !data.data || !data.data.servers) {
+      console.error('Invalid sources data received from AnimeFLV:', data);
+      return [];
+    }
+    
+    return data.data.servers.map((source: any) => ({
+      url: source.embed,
+      type: 'embed',
+      quality: source.name,
+      provider: 'AnimeFLV'
+    })).filter((s: VideoSource) => s.url);
   } catch (error) {
-    console.error('Error fetching from AnimeFLV API:', error);
+    console.error('Error in fetchVideoSources:', error);
     return [];
   }
 }
 
-export function generateVidFastUrl(imdbId?: string, tmdbId?: string, contentType?: string, episodeNumber?: number): VideoSource | null {
-  const id = imdbId || tmdbId;
-  if (!id) return null;
-  
-  let url: string;
-  if (contentType === 'movie') {
-    url = `${VIDFAST_EMBED_BASE}/movie/${id}`;
-  } else {
-    const episode = episodeNumber || 1;
-    url = `${VIDFAST_EMBED_BASE}/tv/${id}/1/${episode}`;
-  }
-  
-  return {
-    type: 'embed',
-    url,
-    provider: 'VidFast.pro'
-  };
-}
-
 export async function consolidateVideoSources(
   animeFlvId?: string,
-  imdbId?: string, 
-  tmdbId?: string,
-  contentType?: string,
   episodeNumber: number = 1
 ): Promise<VideoSource[]> {
-  const sources: VideoSource[] = [];
-  const seenUrls = new Set<string>();
-  
-  // Fetch from AnimeFLV API (priority)
-  if (animeFlvId) {
-    const apiSources = await fetchVideoSources(animeFlvId, episodeNumber);
-    apiSources.forEach(source => {
-      if (!seenUrls.has(source.url)) {
-        sources.push(source);
-        seenUrls.add(source.url);
-      }
-    });
+  if (!animeFlvId) {
+    console.warn('No AnimeFLV ID provided to consolidateVideoSources');
+    return [];
   }
   
-  // Add VidFast.pro as fallback
-  const vidFastSource = generateVidFastUrl(imdbId, tmdbId, contentType, episodeNumber);
-  if (vidFastSource && !seenUrls.has(vidFastSource.url)) {
-    sources.push(vidFastSource);
-    seenUrls.add(vidFastSource.url);
-  }
-  
-  return sources;
+  console.log(`Fetching video sources for AnimeFLV ID: ${animeFlvId}, Episode: ${episodeNumber}`);
+  return await fetchVideoSources(animeFlvId, episodeNumber);
 }

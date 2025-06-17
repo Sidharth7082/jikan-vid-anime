@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,7 @@ import { X, ArrowLeft, Video, Subtitles, Play, ExternalLink } from "lucide-react
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { fetchUnifiedDetail, consolidateVideoSources, type DetailedContent, type VideoSource } from "@/lib/unified-api";
+import { toast } from "@/components/ui/use-toast";
 
 interface Props {
   open: boolean;
@@ -42,15 +42,17 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
     
     setLoading(true);
     try {
-      // Convert anime object to unified format
-      const sourceType = 'Jikan'; // Assuming we're coming from Jikan API
+      const sourceType = 'Jikan';
       const itemId = anime.mal_id?.toString();
-      
-      if (!itemId) {
-        throw new Error('No valid ID found for content');
+      const itemTitle = anime.title;
+
+      if (!itemId || !itemTitle) {
+        throw new Error('No valid MAL ID or Title found for content');
       }
 
-      const details = await fetchUnifiedDetail(sourceType, itemId);
+      console.log(`Loading content details for MAL ID: ${itemId}, Title: ${itemTitle}`);
+      const details = await fetchUnifiedDetail(sourceType, itemId, itemTitle);
+
       setDetailedContent({
         ...details,
         // Fallback to original anime data if detail fetch doesn't have everything
@@ -64,6 +66,11 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
       });
     } catch (error) {
       console.error('Error loading content details:', error);
+      toast({
+        title: "Error Loading Content",
+        description: error instanceof Error ? error.message : "Failed to load anime details",
+        variant: "destructive"
+      });
       // Fallback to original anime data
       setDetailedContent({
         source_type: 'Jikan',
@@ -85,10 +92,6 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
     
     const episodeCount = detailedContent.episodes_count || 1;
     
-    if (detailedContent.content_type === 'movie') {
-      return [{ number: 1, label: 'Play Movie' }];
-    }
-    
     return Array.from({ length: episodeCount }, (_, i) => ({
       number: i + 1,
       label: `Episode ${i + 1}`
@@ -96,7 +99,20 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
   };
 
   const loadAndPlayEpisode = async (episodeNumber: number) => {
-    if (!detailedContent) return;
+    if (!detailedContent) {
+      setPlayerStatus('Error: No anime details available');
+      return;
+    }
+    
+    if (!detailedContent.animeflv_id) {
+      setPlayerStatus('Error: This anime is not available for streaming (No AnimeFLV ID found)');
+      toast({
+        title: "Streaming Not Available",
+        description: "This anime could not be found on the streaming provider.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     setEpisode(episodeNumber);
     setCurrentView('player');
@@ -106,39 +122,59 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
     setCurrentSource(null);
     
     try {
+      console.log(`Loading episode ${episodeNumber} for anime:`, detailedContent.title);
       const sources = await consolidateVideoSources(
         detailedContent.animeflv_id,
-        detailedContent.imdb_id,
-        detailedContent.tmdb_id,
-        detailedContent.content_type,
         episodeNumber
       );
       
       setVideoSources(sources);
       
       if (sources.length > 0) {
-        // Prioritize sources: Your API embed > Your API direct > VidFast.pro
+        console.log('Available video sources:', sources);
+        // Prioritize embed sources over direct sources
         const prioritizedSource = 
-          sources.find(s => s.provider === 'Your API' && s.type === 'embed') ||
-          sources.find(s => s.provider === 'Your API' && s.type === 'direct') ||
-          sources.find(s => s.provider === 'VidFast.pro') ||
+          sources.find(s => s.type === 'embed') ||
+          sources.find(s => s.type === 'direct') ||
           sources[0];
           
-        playSource(prioritizedSource);
+        if (prioritizedSource) {
+          console.log('Selected source:', prioritizedSource);
+          playSource(prioritizedSource);
+        } else {
+          setPlayerStatus('Error: No valid video source found');
+          toast({
+            title: "Streaming Error",
+            description: "No valid video sources were found for this episode.",
+            variant: "destructive"
+          });
+        }
       } else {
-        setPlayerStatus('No video sources found for this episode.');
+        setPlayerStatus('No video sources found for this episode. The episode might not be available.');
+        toast({
+          title: "Streaming Error",
+          description: "No video sources found for this episode. Please try again later.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Error loading episode:', error);
-      setPlayerStatus(`Error loading episode: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setPlayerStatus(`Error loading episode: ${errorMessage}`);
+      toast({
+        title: "Streaming Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
     }
     
     setLoading(false);
   };
 
   const playSource = (source: VideoSource) => {
+    console.log('Playing source:', source);
     setCurrentSource(source);
-    setPlayerStatus(`Playing from ${source.provider} (${source.type.toUpperCase()})`);
+    setPlayerStatus(`Playing from ${source.provider} (${source.quality || 'Default'})`);
   };
 
   const renderPlayer = () => {
@@ -161,7 +197,14 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
           controls
           autoPlay
           className="w-full h-full"
-          onError={() => setPlayerStatus('Error playing video. Try another source.')}
+          onError={() => {
+            setPlayerStatus('Error playing video. Try another source.');
+            toast({
+              title: "Playback Error",
+              description: "Failed to play the video. The source may be invalid or offline.",
+              variant: "destructive"
+            });
+          }}
         >
           Your browser does not support the video tag.
         </video>
@@ -188,7 +231,7 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
             )}
             <DialogTitle className="text-2xl md:text-3xl font-black mb-1 text-white tracking-tight" style={{letterSpacing: "-1.2px"}}>
               {currentView === 'player' 
-                ? `${detailedContent?.content_type === 'movie' ? 'Movie' : `Episode ${episode}`} - ${detailedContent?.title}`
+                ? `Episode ${episode} - ${detailedContent?.title}`
                 : detailedContent?.title || anime.title || "Content"
               }
             </DialogTitle>
@@ -263,20 +306,12 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
                   </div>
 
                   {/* IDs Display */}
-                  <div className="bg-[#1a1a1d] rounded-lg p-4 space-y-2 text-xs">
+                  <div className="mt-4">
                     <h4 className="text-white font-semibold mb-2">Content IDs:</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       <div>
                         <span className="text-zinc-400">MAL ID:</span>
                         <span className="ml-2 text-white">{detailedContent.mal_id || 'Not found'}</span>
-                      </div>
-                      <div>
-                        <span className="text-zinc-400">IMDB ID:</span>
-                        <span className="ml-2 text-white">{detailedContent.imdb_id || 'Not found'}</span>
-                      </div>
-                      <div>
-                        <span className="text-zinc-400">TMDB ID:</span>
-                        <span className="ml-2 text-white">{detailedContent.tmdb_id || 'Not found'}</span>
                       </div>
                       <div>
                         <span className="text-zinc-400">AnimeFLV ID:</span>
