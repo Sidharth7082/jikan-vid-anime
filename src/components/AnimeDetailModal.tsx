@@ -1,9 +1,11 @@
+
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { X, ArrowLeft, Video, Subtitles, Play } from "lucide-react";
+import { X, ArrowLeft, Video, Subtitles, Play, ExternalLink } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { fetchUnifiedDetail, consolidateVideoSources, type DetailedContent, type VideoSource } from "@/lib/unified-api";
 
 interface Props {
   open: boolean;
@@ -12,186 +14,338 @@ interface Props {
 }
 
 const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
+  const [detailedContent, setDetailedContent] = useState<DetailedContent | null>(null);
+  const [currentView, setCurrentView] = useState<'details' | 'player'>('details');
   const [episode, setEpisode] = useState(1);
-  const [streamType, setStreamType] = useState<"sub" | "dub">("sub");
+  const [videoSources, setVideoSources] = useState<VideoSource[]>([]);
+  const [currentSource, setCurrentSource] = useState<VideoSource | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [playerStatus, setPlayerStatus] = useState('');
 
+  // Reset state when modal opens/closes or anime changes
   useEffect(() => {
-    if (!open) {
+    if (!open || !anime) {
+      setDetailedContent(null);
+      setCurrentView('details');
+      setEpisode(1);
+      setVideoSources([]);
+      setCurrentSource(null);
+      setPlayerStatus('');
       return;
     }
 
-    const handlePlayerEvent = (event: MessageEvent) => {
-      // For security, only accept messages from the video player's origin
-      if (event.origin !== "https://vidsrc.cc") {
-        return;
+    loadContentDetails();
+  }, [open, anime]);
+
+  const loadContentDetails = async () => {
+    if (!anime) return;
+    
+    setLoading(true);
+    try {
+      // Convert anime object to unified format
+      const sourceType = 'Jikan'; // Assuming we're coming from Jikan API
+      const itemId = anime.mal_id?.toString();
+      
+      if (!itemId) {
+        throw new Error('No valid ID found for content');
       }
 
-      if (event.data && event.data.type === "PLAYER_EVENT") {
-        console.log("Player Event Received:", event.data.data);
-        // This can be expanded later to track user watch progress.
+      const details = await fetchUnifiedDetail(sourceType, itemId);
+      setDetailedContent({
+        ...details,
+        // Fallback to original anime data if detail fetch doesn't have everything
+        title: details.title || anime.title,
+        poster: details.poster || anime.images?.webp?.large_image_url || anime.images?.jpg?.large_image_url,
+        synopsis: details.synopsis || anime.synopsis,
+        episodes_count: details.episodes_count || anime.episodes || 1,
+        score: details.score || anime.score,
+        genres: details.genres || anime.genres?.map((g: any) => g.name) || [],
+        content_type: 'anime'
+      });
+    } catch (error) {
+      console.error('Error loading content details:', error);
+      // Fallback to original anime data
+      setDetailedContent({
+        source_type: 'Jikan',
+        content_type: 'anime',
+        mal_id: anime.mal_id?.toString(),
+        title: anime.title,
+        poster: anime.images?.webp?.large_image_url || anime.images?.jpg?.large_image_url,
+        synopsis: anime.synopsis,
+        episodes_count: anime.episodes || 1,
+        score: anime.score,
+        genres: anime.genres?.map((g: any) => g.name) || []
+      });
+    }
+    setLoading(false);
+  };
+
+  const generatePlaybackOptions = () => {
+    if (!detailedContent) return [];
+    
+    const episodeCount = detailedContent.episodes_count || 1;
+    
+    if (detailedContent.content_type === 'movie') {
+      return [{ number: 1, label: 'Play Movie' }];
+    }
+    
+    return Array.from({ length: episodeCount }, (_, i) => ({
+      number: i + 1,
+      label: `Episode ${i + 1}`
+    }));
+  };
+
+  const loadAndPlayEpisode = async (episodeNumber: number) => {
+    if (!detailedContent) return;
+    
+    setEpisode(episodeNumber);
+    setCurrentView('player');
+    setLoading(true);
+    setPlayerStatus('Loading sources...');
+    setVideoSources([]);
+    setCurrentSource(null);
+    
+    try {
+      const sources = await consolidateVideoSources(
+        detailedContent.animeflv_id,
+        detailedContent.imdb_id,
+        detailedContent.tmdb_id,
+        detailedContent.content_type,
+        episodeNumber
+      );
+      
+      setVideoSources(sources);
+      
+      if (sources.length > 0) {
+        // Prioritize sources: Your API embed > Your API direct > VidFast.pro
+        const prioritizedSource = 
+          sources.find(s => s.provider === 'Your API' && s.type === 'embed') ||
+          sources.find(s => s.provider === 'Your API' && s.type === 'direct') ||
+          sources.find(s => s.provider === 'VidFast.pro') ||
+          sources[0];
+          
+        playSource(prioritizedSource);
+      } else {
+        setPlayerStatus('No video sources found for this episode.');
       }
-    };
+    } catch (error) {
+      console.error('Error loading episode:', error);
+      setPlayerStatus(`Error loading episode: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+    
+    setLoading(false);
+  };
 
-    window.addEventListener("message", handlePlayerEvent);
+  const playSource = (source: VideoSource) => {
+    setCurrentSource(source);
+    setPlayerStatus(`Playing from ${source.provider} (${source.type.toUpperCase()})`);
+  };
 
-    return () => {
-      window.removeEventListener("message", handlePlayerEvent);
-    };
-  }, [open]);
+  const renderPlayer = () => {
+    if (!currentSource) return null;
+    
+    if (currentSource.type === 'embed') {
+      return (
+        <iframe
+          src={currentSource.url}
+          title={`${detailedContent?.title} Episode ${episode}`}
+          className="w-full h-full border-none"
+          allowFullScreen
+          allow="autoplay; fullscreen"
+        />
+      );
+    } else {
+      return (
+        <video
+          src={currentSource.url}
+          controls
+          autoPlay
+          className="w-full h-full"
+          onError={() => setPlayerStatus('Error playing video. Try another source.')}
+        >
+          Your browser does not support the video tag.
+        </video>
+      );
+    }
+  };
 
   if (!anime) return null;
-  const mainId = anime.mal_id;
-
-  // Max episode fallback: Try episode count or guess
-  const totalEpisodes = anime.episodes || 24;
-
-  const embedUrl = `https://vidsrc.cc/v2/embed/anime/${mainId}/${episode}/${streamType}`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-7xl w-full overflow-y-auto animate-fade-in font-sans bg-gradient-to-br from-[#19191eeb] via-[#101112ea] to-[#18181ebf] shadow-[0_12px_40px_0_rgba(18,16,39,0.94)] border border-[#232324] sm:rounded-2xl p-0
-        backdrop-blur-lg md:min-h-[600px] max-h-[95vh]"
-      >
+      <DialogContent className="max-w-7xl w-full overflow-y-auto animate-fade-in font-sans bg-gradient-to-br from-[#19191eeb] via-[#101112ea] to-[#18181ebf] shadow-[0_12px_40px_0_rgba(18,16,39,0.94)] border border-[#232324] sm:rounded-2xl p-0 backdrop-blur-lg md:min-h-[600px] max-h-[95vh]">
         {/* Header */}
         <DialogHeader className="bg-gradient-to-br from-[#1d1c20fc] to-[#17181aeb] rounded-t-2xl p-6 pb-4">
           <div className="flex items-center mb-1 gap-3">
-            <Button onClick={() => onOpenChange(false)} variant="ghost" size="icon" aria-label="Back to List">
-              <ArrowLeft size={22} />
-            </Button>
+            {currentView === 'player' ? (
+              <Button onClick={() => setCurrentView('details')} variant="ghost" size="icon" aria-label="Back to Details">
+                <ArrowLeft size={22} />
+              </Button>
+            ) : (
+              <Button onClick={() => onOpenChange(false)} variant="ghost" size="icon" aria-label="Back to List">
+                <ArrowLeft size={22} />
+              </Button>
+            )}
             <DialogTitle className="text-2xl md:text-3xl font-black mb-1 text-white tracking-tight" style={{letterSpacing: "-1.2px"}}>
-              {anime.title ?? "Anime"}
+              {currentView === 'player' 
+                ? `${detailedContent?.content_type === 'movie' ? 'Movie' : `Episode ${episode}`} - ${detailedContent?.title}`
+                : detailedContent?.title || anime.title || "Content"
+              }
             </DialogTitle>
             <span className="flex-1"/>
-            <Button onClick={() => onOpenChange(false)} variant="ghost" size="icon" aria-label="Close detail">
+            <Button onClick={() => onOpenChange(false)} variant="ghost" size="icon" aria-label="Close">
               <X size={20} />
             </Button>
           </div>
         </DialogHeader>
-        <div className="flex flex-col md:flex-row gap-6 p-6">
-          {/* Left Column: Episode List */}
-          <div className="w-full md:w-[320px] flex-shrink-0">
-            <h3 className="text-xl font-bold text-white mb-4 px-1">Episodes</h3>
-            <div className="space-y-2 md:max-h-[65vh] md:overflow-y-auto custom-scrollbar md:pr-2">
-              {Array.from({ length: totalEpisodes || 0 }, (_, i) => i + 1).map((epNum) => (
-                  <Button
-                    key={epNum}
-                    variant="ghost"
-                    className={cn(
-                      "w-full justify-start text-left h-auto py-2 px-3 rounded-lg transition-colors duration-200 ease-in-out text-zinc-300 hover:bg-zinc-700/50 hover:text-white flex items-center gap-3",
-                      epNum === episode ? "bg-zinc-700 !text-purple-400 font-bold border-l-4 border-purple-500 rounded-l-none" : ""
-                    )}
-                    onClick={() => setEpisode(epNum)}
-                  >
-                    <span className="text-zinc-500 font-mono w-8 flex-shrink-0">{epNum}</span>
-                    <span className="truncate flex-1">Episode {epNum}</span>
-                    {epNum === episode && <Play className="w-5 h-5 text-purple-400 ml-auto flex-shrink-0" fill="currentColor" />}
-                  </Button>
-                ))}
-            </div>
-          </div>
 
-          {/* Right Column: Player & Details */}
-          <div className="flex-1 min-w-0">
-            {/* Video Player */}
-            <div className="relative aspect-video w-full rounded-xl overflow-hidden border-2 border-[#202023] shadow-lg bg-zinc-900/80">
-              <iframe
-                title={`${anime.title} episode ${episode} ${streamType}`}
-                src={embedUrl}
-                loading="lazy"
-                allow="fullscreen"
-                allowFullScreen
-                className="w-full h-full bg-black"
-              />
-              <span className="absolute left-2 top-2 bg-black/50 px-2 py-0.5 text-white font-bold text-xs rounded shadow">
-                Watch: Ep. {episode} / {totalEpisodes} ({streamType.toUpperCase()})
-              </span>
+        <div className="p-6">
+          {loading && (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+              <span className="ml-3 text-white">Loading...</span>
             </div>
-            
-            <div className="flex gap-3 mt-4">
-              <Button
-                variant={streamType === "sub" ? "default" : "ghost"}
-                onClick={() => setStreamType("sub")}
-                size="sm"
-                className="flex gap-2"
-                aria-pressed={streamType === "sub"}
-              >
-                <Subtitles size={17} /> SUB
-              </Button>
-              <Button
-                variant={streamType === "dub" ? "default" : "ghost"}
-                onClick={() => setStreamType("dub")}
-                size="sm"
-                className="flex gap-2"
-                aria-pressed={streamType === "dub"}
-              >
-                <Video size={17} /> DUB
-              </Button>
-            </div>
-            
-            {/* Details section */}
-            <div className="mt-6 flex flex-col md:flex-row gap-6">
-              <img
-                src={anime.images?.webp?.large_image_url || anime.images?.jpg?.large_image_url || "/placeholder.svg"}
-                alt={anime.title}
-                className="rounded-xl object-cover shadow-xl w-44 h-64 mx-auto md:mx-0 border-2 border-[#222223] bg-zinc-900 flex-shrink-0"
-                loading="lazy"
-                onError={(e) => ((e.target as HTMLImageElement).src = "/placeholder.svg")}
-              />
-              <div className="flex-1 min-w-0 text-white">
+          )}
+
+          {/* Details View */}
+          {currentView === 'details' && detailedContent && !loading && (
+            <div className="flex flex-col lg:flex-row gap-8">
+              {/* Poster */}
+              <div className="flex-shrink-0">
+                <img
+                  src={detailedContent.poster || "/placeholder.svg"}
+                  alt={detailedContent.title}
+                  className="rounded-xl object-cover shadow-xl w-64 h-96 mx-auto lg:mx-0 border-2 border-[#222223] bg-zinc-900"
+                  loading="lazy"
+                  onError={(e) => ((e.target as HTMLImageElement).src = "/placeholder.svg")}
+                />
+              </div>
+
+              {/* Content Details */}
+              <div className="flex-1 min-w-0 text-white space-y-6">
                 <DialogDescription asChild>
-                  <p className="line-clamp-6 mb-3 text-neutral-200 leading-relaxed font-medium" style={{ textShadow: "0 0 12px #18181866" }}>
-                    {anime.synopsis || "No synopsis available."}
+                  <p className="text-neutral-200 leading-relaxed font-medium text-base">
+                    {detailedContent.synopsis || "No synopsis available."}
                   </p>
                 </DialogDescription>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {anime.genres?.map((g: any) => (
-                    <span className="bg-[#232323] text-[#f3f3f3] px-2 py-0.5 text-xs rounded" key={g.name}>
-                      {g.name}
-                    </span>
-                  ))}
-                  {anime.rating && (
-                    <span className="bg-[#232323] px-2 py-0.5 rounded text-xs text-neutral-200">{anime.rating}</span>
-                  )}
-                  {anime.score && (
-                    <span className="bg-[#e50914] ml-2 text-white rounded px-2 py-0.5 font-bold text-xs animate-fade-in shadow shadow-[#e50914]/30 tracking-wide drop-shadow">
-                      ★ {anime.score}
-                    </span>
-                  )}
+
+                {/* Metadata */}
+                <div className="space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    {detailedContent.genres?.map((genre) => (
+                      <span key={genre} className="bg-[#232323] text-[#f3f3f3] px-3 py-1 text-sm rounded">
+                        {genre}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <span className="text-zinc-400">Episodes:</span>
+                      <span className="ml-2 text-white font-semibold">
+                        {detailedContent.episodes_count || 'N/A'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-400">Status:</span>
+                      <span className="ml-2 text-white font-semibold">
+                        {detailedContent.status || 'Unknown'}
+                      </span>
+                    </div>
+                    {detailedContent.score && (
+                      <div>
+                        <span className="text-zinc-400">Score:</span>
+                        <span className="ml-2 text-yellow-400 font-semibold">
+                          ★ {detailedContent.score}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* IDs Display */}
+                  <div className="bg-[#1a1a1d] rounded-lg p-4 space-y-2 text-xs">
+                    <h4 className="text-white font-semibold mb-2">Content IDs:</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <div>
+                        <span className="text-zinc-400">MAL ID:</span>
+                        <span className="ml-2 text-white">{detailedContent.mal_id || 'Not found'}</span>
+                      </div>
+                      <div>
+                        <span className="text-zinc-400">IMDB ID:</span>
+                        <span className="ml-2 text-white">{detailedContent.imdb_id || 'Not found'}</span>
+                      </div>
+                      <div>
+                        <span className="text-zinc-400">TMDB ID:</span>
+                        <span className="ml-2 text-white">{detailedContent.tmdb_id || 'Not found'}</span>
+                      </div>
+                      <div>
+                        <span className="text-zinc-400">AnimeFLV ID:</span>
+                        <span className="ml-2 text-white">{detailedContent.animeflv_id || 'Not found'}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                {/* Source Buttons */}
-                <div className="flex gap-2 mt-5 justify-start">
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="sm"
-                    className="font-bold"
-                  >
-                    <a
-                      href={anime.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      View on MyAnimeList
-                    </a>
-                  </Button>
-                  <Button
-                    asChild
-                    variant="default"
-                    size="sm"
-                    className="font-bold"
-                  >
-                    <a
-                      href={embedUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      ▶ Direct Stream Link
-                    </a>
-                  </Button>
+
+                {/* Playback Options */}
+                <div className="space-y-4">
+                  <h3 className="text-xl font-bold text-white">Watch Options</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 max-h-64 overflow-y-auto">
+                    {generatePlaybackOptions().map((option) => (
+                      <Button
+                        key={option.number}
+                        onClick={() => loadAndPlayEpisode(option.number)}
+                        className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                      >
+                        {option.label}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Player View */}
+          {currentView === 'player' && (
+            <div className="space-y-6">
+              {/* Video Player */}
+              <div className="relative aspect-video w-full rounded-xl overflow-hidden border-2 border-[#202023] shadow-lg bg-black">
+                {renderPlayer()}
+                {playerStatus && (
+                  <div className="absolute bottom-4 left-4 bg-black/75 text-white px-3 py-1 rounded text-sm">
+                    {playerStatus}
+                  </div>
+                )}
+              </div>
+
+              {/* Source Selection */}
+              {videoSources.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-white font-semibold">Available Sources:</h4>
+                  <div className="flex flex-wrap gap-3">
+                    {videoSources.map((source, index) => (
+                      <Button
+                        key={index}
+                        onClick={() => playSource(source)}
+                        variant={currentSource === source ? "default" : "outline"}
+                        className={cn(
+                          "font-semibold",
+                          currentSource === source 
+                            ? "bg-blue-600 hover:bg-blue-700 text-white" 
+                            : "bg-zinc-700 hover:bg-zinc-600 text-white border-zinc-600"
+                        )}
+                      >
+                        Source {index + 1} ({source.type.toUpperCase()})
+                        <span className="ml-1 text-xs opacity-75">
+                          - {source.provider}
+                        </span>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
