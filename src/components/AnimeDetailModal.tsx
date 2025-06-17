@@ -1,10 +1,9 @@
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { X, ArrowLeft, Video, Subtitles } from "lucide-react";
+import { X, ArrowLeft, Video, Subtitles, Play } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { VideoPlayer } from "./VideoPlayer";
 
 interface Props {
   open: boolean;
@@ -14,6 +13,7 @@ interface Props {
 
 const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
   const [episode, setEpisode] = useState(1);
+  const [streamType, setStreamType] = useState<"sub" | "dub">("sub");
 
   useEffect(() => {
     if (!open) {
@@ -44,6 +44,8 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
 
   // Max episode fallback: Try episode count or guess
   const totalEpisodes = anime.episodes || 24;
+
+  const embedUrl = `https://vidsrc.cc/v2/embed/anime/${mainId}/${episode}/${streamType}`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -82,7 +84,7 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
                   >
                     <span className="text-zinc-500 font-mono w-8 flex-shrink-0">{epNum}</span>
                     <span className="truncate flex-1">Episode {epNum}</span>
-                    {epNum === episode && <Video className="w-5 h-5 text-purple-400 ml-auto flex-shrink-0" fill="currentColor" />}
+                    {epNum === episode && <Play className="w-5 h-5 text-purple-400 ml-auto flex-shrink-0" fill="currentColor" />}
                   </Button>
                 ))}
             </div>
@@ -91,11 +93,40 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
           {/* Right Column: Player & Details */}
           <div className="flex-1 min-w-0">
             {/* Video Player */}
-            <VideoPlayer
-              animeTitle={anime.title}
-              animeMalId={mainId}
-              episodeNumber={episode}
-            />
+            <div className="relative aspect-video w-full rounded-xl overflow-hidden border-2 border-[#202023] shadow-lg bg-zinc-900/80">
+              <iframe
+                title={`${anime.title} episode ${episode} ${streamType}`}
+                src={embedUrl}
+                loading="lazy"
+                allow="fullscreen"
+                allowFullScreen
+                className="w-full h-full bg-black"
+              />
+              <span className="absolute left-2 top-2 bg-black/50 px-2 py-0.5 text-white font-bold text-xs rounded shadow">
+                Watch: Ep. {episode} / {totalEpisodes} ({streamType.toUpperCase()})
+              </span>
+            </div>
+            
+            <div className="flex gap-3 mt-4">
+              <Button
+                variant={streamType === "sub" ? "default" : "ghost"}
+                onClick={() => setStreamType("sub")}
+                size="sm"
+                className="flex gap-2"
+                aria-pressed={streamType === "sub"}
+              >
+                <Subtitles size={17} /> SUB
+              </Button>
+              <Button
+                variant={streamType === "dub" ? "default" : "ghost"}
+                onClick={() => setStreamType("dub")}
+                size="sm"
+                className="flex gap-2"
+                aria-pressed={streamType === "dub"}
+              >
+                <Video size={17} /> DUB
+              </Button>
+            </div>
             
             {/* Details section */}
             <div className="mt-6 flex flex-col md:flex-row gap-6">
@@ -141,6 +172,20 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
                       rel="noopener noreferrer"
                     >
                       View on MyAnimeList
+                    </a>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="default"
+                    size="sm"
+                    className="font-bold"
+                  >
+                    <a
+                      href={embedUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      ▶ Direct Stream Link
                     </a>
                   </Button>
                 </div>
