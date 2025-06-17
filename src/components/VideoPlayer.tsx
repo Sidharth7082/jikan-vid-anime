@@ -116,7 +116,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       }
     }
 
-    setStatus(`Playing from ${source.name}`);
+    setStatus(`Trying to play ${source.type} source...`);
   };
 
   // Load sources when component mounts or episode changes
@@ -159,24 +159,29 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         
         {/* Episode Info Overlay */}
         <div className="absolute left-2 top-2 bg-black/50 px-2 py-0.5 text-white font-bold text-xs rounded shadow">
-          Episode {episodeNumber} - {currentSource?.name || 'Loading...'}
+          Episode {episodeNumber}
         </div>
       </div>
 
-      {/* Source Selection Buttons */}
+      {/* Status Message */}
+      {status && !loading && (
+        <div className="mt-3 text-sm text-gray-300 text-center">
+          {status}
+        </div>
+      )}
+
+      {/* Source Selection Buttons - Compact Layout */}
       {sources.length > 0 && (
-        <div className="mt-4">
-          <h4 className="text-sm font-semibold text-white mb-2">Available Sources:</h4>
-          <div className="flex flex-wrap gap-2">
+        <div className="mt-4 space-y-3">
+          <div className="flex flex-wrap gap-2 justify-center">
             {sources.map((source) => (
               <Button
                 key={source.id}
                 variant={currentSource?.id === source.id ? "default" : "outline"}
                 size="sm"
                 onClick={() => playSource(source)}
-                className="text-xs"
+                className="px-4 py-2 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg transition-colors duration-200"
               >
-                <Play className="w-3 h-3 mr-1" />
                 {source.name}
               </Button>
             ))}
@@ -184,16 +189,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         </div>
       )}
 
-      {/* Status Message */}
-      {status && !loading && (
-        <div className="mt-2 text-xs text-gray-400">
-          {status}
-        </div>
-      )}
-
       {/* Retry Button */}
       {!loading && sources.length === 0 && (
-        <div className="mt-4">
+        <div className="mt-4 text-center">
           <Button onClick={loadAndPlayEpisode} variant="outline" size="sm">
             <Loader2 className="w-4 h-4 mr-2" />
             Retry Loading Sources
