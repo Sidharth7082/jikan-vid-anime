@@ -1,9 +1,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
-import { Loader2, Play } from 'lucide-react';
-import { VideoSource, getVideoSources, searchAnimeFlv } from '@/lib/animeflv-api';
+import { Loader2 } from 'lucide-react';
 import { useToast } from './ui/use-toast';
+
+interface VideoSource {
+  type: "embed" | "direct" | "unknown";
+  url: string;
+}
 
 interface ConsolidatedSource extends VideoSource {
   id: string;
@@ -16,6 +20,8 @@ interface VideoPlayerProps {
   animeMalId: number;
   episodeNumber: number;
 }
+
+const ANIMEFLV_BASE_URL = "https://animeflv-api-backend.onrender.com";
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   animeTitle,
@@ -32,6 +38,30 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const { toast } = useToast();
 
+  const searchAnimeFlv = async (query: string) => {
+    try {
+      const response = await fetch(`${ANIMEFLV_BASE_URL}/api/search?query=${encodeURIComponent(query)}`);
+      if (!response.ok) throw new Error("Failed to search anime");
+      const data = await response.json();
+      return data || [];
+    } catch (error) {
+      console.error("AnimeFlv search error:", error);
+      return [];
+    }
+  };
+
+  const getVideoSources = async (animeId: string, episodeNumber: number) => {
+    try {
+      const response = await fetch(`${ANIMEFLV_BASE_URL}/api/video-sources/${animeId}/${episodeNumber}`);
+      if (!response.ok) throw new Error("Failed to fetch video sources");
+      const data = await response.json();
+      return data.sources || [];
+    } catch (error) {
+      console.error("AnimeFlv video sources error:", error);
+      return [];
+    }
+  };
+
   const loadAndPlayEpisode = async () => {
     setLoading(true);
     setStatus("Loading sources...");
@@ -40,6 +70,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
     try {
       // Search for anime in AnimeFlv to get the ID
+      setStatus("Searching for anime...");
       const searchResults = await searchAnimeFlv(animeTitle);
       const animeFlvResult = searchResults[0]; // Take first result
       
@@ -48,11 +79,14 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         return;
       }
 
+      console.log("Found anime:", animeFlvResult);
       setAnimeFlvId(animeFlvResult.id);
+      
+      setStatus("Fetching video sources...");
       const animeFlvSources = await getVideoSources(animeFlvResult.id, episodeNumber);
       
       // Create consolidated sources from AnimeFlv API
-      const consolidatedSources: ConsolidatedSource[] = animeFlvSources.map((source, index) => ({
+      const consolidatedSources: ConsolidatedSource[] = animeFlvSources.map((source: VideoSource, index: number) => ({
         id: `animeflv-${index}`,
         name: `Source ${index + 1} (${source.type.toUpperCase()})`,
         type: source.type,
@@ -60,7 +94,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         priority: source.type === 'embed' ? 1 : source.type === 'direct' ? 2 : 3
       }));
 
-      // Sort by priority
+      // Sort by priority (embed first, then direct, then unknown)
       consolidatedSources.sort((a, b) => a.priority - b.priority);
       setSources(consolidatedSources);
 
