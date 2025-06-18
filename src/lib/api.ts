@@ -1,6 +1,3 @@
-
-import { fetchUnifiedAnimeDetails } from './unified-api';
-
 const BASE_URL = "https://api.jikan.moe/v4";
 
 export async function fetchTopAnime(page = 1) {
@@ -18,31 +15,11 @@ export async function searchAnime(query: string) {
   return data.data;
 }
 
-export async function fetchAnimeDetails(malId: number): Promise<any> {
-  try {
-    // Use the unified API which prioritizes English content
-    const response = await fetchUnifiedAnimeDetails(malId.toString());
-    return response;
-  } catch (error) {
-    console.error('Error fetching anime details:', error);
-    // Fallback to direct Jikan API if unified fails
-    try {
-      const fallbackResponse = await fetch(`https://api.jikan.moe/v4/anime/${malId}`);
-      const fallbackData = await fallbackResponse.json();
-      
-      if (fallbackData.data) {
-        const anime = fallbackData.data;
-        return {
-          ...anime,
-          title: anime.title_english || anime.title,
-          synopsis: anime.synopsis || "No synopsis available."
-        };
-      }
-    } catch (fallbackError) {
-      console.error('Fallback also failed:', fallbackError);
-    }
-    throw error;
-  }
+export async function fetchAnimeDetails(id: number | string) {
+  const res = await fetch(`${BASE_URL}/anime/${id}/full`);
+  if (!res.ok) throw new Error("Failed to fetch anime details");
+  const data = await res.json();
+  return data.data;
 }
 
 export async function fetchAnimeByLetter(letter: string, page = 1) {

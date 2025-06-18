@@ -1,6 +1,5 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
 import AnimeCard from "./AnimeCard";
 
 interface TopAnimeSectionProps {
@@ -37,12 +36,9 @@ const TopAnimeSection: React.FC<TopAnimeSectionProps> = ({
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-white">Top Airing Anime</h2>
-          <Link 
-            to="/top-airing"
-            className="text-[#ffb800] hover:text-[#ff9500] font-medium text-sm transition-colors"
-          >
+          <button className="text-[#ffb800] hover:text-[#ff9500] font-medium text-sm transition-colors">
             View All →
-          </Link>
+          </button>
         </div>
         
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">

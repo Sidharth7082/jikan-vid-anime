@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -82,7 +83,7 @@ const SettingsPage = () => {
     toast.success("Settings saved successfully!");
   }
 
-  const handleSearch = async (anime: any) => {
+  const handleSearch = (anime: any) => {
     if (anime) {
       navigate("/");
     }

@@ -1,217 +1,163 @@
-
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
+import { supabase } from "@/integrations/supabase/client";
+import { Session } from "@supabase/supabase-js";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, User, ChevronDown, Settings, LogIn } from "lucide-react";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Home, User, History, Heart, Bell, FileText, Settings, LogOut, Instagram, Menu } from "lucide-react";
+import AnimeSearchBar from "@/components/AnimeSearchBar";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
-interface NavBarProps {
-  onSearch: (res: any | null) => Promise<void>;
-}
-
-const NavBar: React.FC<NavBarProps> = ({ onSearch }) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
+const NavBar = ({
+  onSearch
+}: {
+  onSearch: (v: any) => void;
+}) => {
+  const [session, setSession] = useState<Session | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
-  const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-
-    if (query.trim() === "") {
-      setSearchResults([]);
-      setSelectedIndex(-1);
-      await onSearch(null);
-      return;
-    }
-
-    try {
-      const results = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&limit=5`);
-      const data = await results.json();
-      setSearchResults(data.data || []);
-      setSelectedIndex(-1);
-    } catch (error) {
-      console.error("Error fetching search results:", error);
-      setSearchResults([]);
-      setSelectedIndex(-1);
-    }
-  };
-
-  const handleResultClick = async (anime: any) => {
-    setSearchQuery("");
-    setSearchResults([]);
-    setMobileSearchOpen(false);
-    await onSearch(anime);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // Add safety checks for searchResults
-    if (!searchResults || !Array.isArray(searchResults)) {
-      return;
-    }
-
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setSelectedIndex((prevIndex) => (prevIndex < searchResults.length - 1 ? prevIndex + 1 : searchResults.length - 1));
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setSelectedIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : 0));
-    } else if (e.key === "Enter" && selectedIndex !== -1 && searchResults[selectedIndex]) {
-      e.preventDefault();
-      handleResultClick(searchResults[selectedIndex]);
-    }
-  };
-
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchInputRef.current && !searchInputRef.current.contains(event.target as Node)) {
-        setSearchResults([]);
-        setSelectedIndex(-1);
+    supabase.auth.getSession().then(({
+      data: {
+        session
       }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    }) => {
+      setSession(session);
+    });
+    const {
+      data: {
+        subscription
+      }
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+    return () => subscription.unsubscribe();
   }, []);
 
-  return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0f1824]/95 backdrop-blur-sm border-b border-[#1f2937]">
-      <div className="max-w-7xl mx-auto px-3 sm:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-[#ffb800] to-[#ff9500] rounded-lg flex items-center justify-center">
-              <span className="text-black font-bold text-lg">A</span>
-            </div>
-            <span className="text-white font-bold text-xl">AnimeStream</span>
-          </Link>
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-[#9ca3af] hover:text-[#ffb800] transition-colors font-medium">
+  const handleSearchSelect = (v: any) => {
+    onSearch(v);
+    setIsMobileMenuOpen(false);
+  };
+
+  return <nav className="sticky top-0 z-30 w-full bg-white/80 backdrop-blur border-b border-zinc-200 shadow-md">
+      <div className="max-w-7xl mx-auto flex justify-between items-center gap-4 py-2 px-5">
+        <div className="flex items-center gap-6">
+          <Link to="/" className="text-3xl font-extrabold tracking-tight" style={{
+          color: "#7D36FF"
+        }}>
+            captureordie
+          </Link>
+          <div className="hidden md:flex items-center gap-6">
+            <Link to="/" className="font-medium text-zinc-900 rounded-full bg-zinc-100 px-4 py-1.5 shadow transition hover:bg-purple-100 flex items-center gap-2">
+              <Home className="w-5 h-5" />
               Home
             </Link>
-            <Link to="/top-airing" className="text-[#9ca3af] hover:text-[#ffb800] transition-colors font-medium">
-              Top Anime
-            </Link>
-            <Link to="/most-popular" className="text-[#9ca3af] hover:text-[#ffb800] transition-colors font-medium">
-              Popular
-            </Link>
-            <Link to="/browse" className="text-[#9ca3af] hover:text-[#ffb800] transition-colors font-medium">
-              Browse
-            </Link>
-            <Link to="/gifs" className="text-[#9ca3af] hover:text-[#ffb800] transition-colors font-medium">
-              GIFs
-            </Link>
-          </div>
-
-          {/* Search Bar */}
-          <div className="flex-1 max-w-md mx-4 hidden sm:block">
-            <div className="relative">
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder="Search anime..."
-                className="w-full px-4 py-2 pl-10 bg-[#1f2937] border border-[#374151] rounded-lg text-white placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#ffb800] focus:border-transparent"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                onKeyDown={handleKeyDown}
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#9ca3af] w-4 h-4" />
-              
-              {/* Search Results Dropdown - Add safety check */}
-              {searchResults && Array.isArray(searchResults) && searchResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-[#1f2937] border border-[#374151] rounded-lg shadow-lg max-h-96 overflow-y-auto z-50">
-                  {searchResults.map((anime, index) => (
-                    <div
-                      key={anime.mal_id}
-                      className={`flex items-center p-3 hover:bg-[#374151] cursor-pointer transition-colors ${
-                        index === selectedIndex ? 'bg-[#374151]' : ''
-                      }`}
-                      onClick={() => handleResultClick(anime)}
-                    >
-                      <img
-                        src={anime.images?.jpg?.small_image_url || "/placeholder.svg"}
-                        alt={anime.title}
-                        className="w-12 h-16 object-cover rounded mr-3"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-white font-medium truncate">{anime.title}</h3>
-                        <p className="text-[#9ca3af] text-sm truncate">
-                          {anime.year} • {anime.type} • ⭐ {anime.score || 'N/A'}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Right side buttons */}
-          <div className="flex items-center space-x-4">
-            {/* Mobile Search */}
-            <button
-              onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-              className="sm:hidden text-[#9ca3af] hover:text-[#ffb800] transition-colors"
-            >
-              <Search className="w-5 h-5" />
-            </button>
-
-            {/* User Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center space-x-2 text-[#9ca3af] hover:text-[#ffb800] transition-colors">
-                <User className="w-5 h-5" />
-                <ChevronDown className="w-4 h-4" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 bg-[#1f2937] border-[#374151]">
-                <DropdownMenuItem asChild>
-                  <Link to="/profile" className="text-white hover:text-[#ffb800]">
-                    <User className="w-4 h-4 mr-2" />
-                    Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/settings" className="text-white hover:text-[#ffb800]">
-                    <Settings className="w-4 h-4 mr-2" />
-                    Settings
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-[#374151]" />
-                <DropdownMenuItem asChild>
-                  <Link to="/auth" className="text-white hover:text-[#ffb800]">
-                    <LogIn className="w-4 h-4 mr-2" />
-                    Sign In
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <a href="/#top-anime" className="hover:underline text-zinc-700 font-medium transition">Top Anime</a>
+            
+            <Link to="/gifs" className="hover:underline text-zinc-700 font-medium transition">GIFs</Link>
+            <Link to="/danbooru" className="hover:underline text-zinc-700 font-medium transition">Danbooru</Link>
+            <a href="/#image" className="hover:underline text-zinc-700 font-medium transition">Image</a>
           </div>
         </div>
-
-        {/* Mobile Search */}
-        {mobileSearchOpen && (
-          <div className="sm:hidden pb-4">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search anime..."
-                className="w-full px-4 py-2 pl-10 bg-[#1f2937] border border-[#374151] rounded-lg text-white placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#ffb800] focus:border-transparent"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                onKeyDown={handleKeyDown}
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#9ca3af] w-4 h-4" />
-            </div>
+        <div className="flex items-center gap-2 md:gap-4">
+          <div className="hidden md:block">
+            <AnimeSearchBar onSelect={onSearch} className="max-w-none w-auto mb-0" wrapperClass="!bg-zinc-100 !border-zinc-300 !rounded-full w-60" placeholder="Search anime..." />
           </div>
-        )}
+          {session ? <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={session.user.user_metadata.avatar_url as string || undefined} alt={session.user.email ?? ''} />
+                    <AvatarFallback>{session.user.email?.[0].toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-64 bg-[#211F2D] text-white border-none rounded-xl p-2 mt-2" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal p-2">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {session.user.user_metadata.full_name as string || session.user.email?.split('@')[0]}
+                    </p>
+                    <p className="text-xs leading-none text-gray-400">
+                      {session.user.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-[#3A374A]/50" />
+                <div className="p-1 space-y-1">
+                  <DropdownMenuItem asChild className="rounded-lg hover:!bg-[#3A374A] focus:!bg-[#3A374A] cursor-pointer p-2 text-sm">
+                    <Link to="/profile">
+                      <User className="mr-3 h-5 w-5" />
+                      <span>Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  
+                  
+                  
+                  
+                  <DropdownMenuItem asChild className="rounded-lg hover:!bg-[#3A374A] focus:!bg-[#3A374A] cursor-pointer p-2 text-sm">
+                    <Link to="/settings">
+                      <Settings className="mr-3 h-5 w-5" />
+                      <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                </div>
+                <DropdownMenuSeparator className="bg-[#3A374A]/50" />
+                <DropdownMenuItem onClick={handleLogout} className="rounded-lg hover:!bg-[#3A374A] focus:!bg-[#3A374A] cursor-pointer p-2 text-sm">
+                  <LogOut className="mr-3 h-5 w-5" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu> : <div className="hidden md:block"><Button asChild className="bg-purple-600 hover:bg-purple-700 text-white">
+              <Link to="/auth">Login</Link>
+            </Button></div>}
+            <div className="md:hidden">
+              <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Menu className="h-6 w-6" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[300px] sm:w-[350px] bg-white/95 backdrop-blur-sm">
+                  <div className="flex flex-col h-full">
+                    <div className="p-4 border-b">
+                      <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-extrabold tracking-tight" style={{ color: "#7D36FF" }}>
+                         captureordie
+                       </Link>
+                    </div>
+                    <div className="p-4">
+                      <AnimeSearchBar onSelect={handleSearchSelect} placeholder="Search anime..." />
+                    </div>
+                    <nav className="flex flex-col p-4 space-y-1">
+                      <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 text-lg font-medium p-3 rounded-lg hover:bg-zinc-100 transition-colors">
+                        <Home className="w-6 h-6 text-purple-600" />
+                        <span>Home</span>
+                      </Link>
+                      <a href="/#top-anime" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium p-3 rounded-lg hover:bg-zinc-100 transition-colors">Top Anime</a>
+                      <Link to="/gifs" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium p-3 rounded-lg hover:bg-zinc-100 transition-colors">GIFs</Link>
+                      <Link to="/danbooru" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium p-3 rounded-lg hover:bg-zinc-100 transition-colors">Danbooru</Link>
+                      <a href="/#image" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium p-3 rounded-lg hover:bg-zinc-100 transition-colors">Image</a>
+                    </nav>
+                    <div className="mt-auto p-4 border-t">
+                      {!session && (
+                        <Button asChild className="w-full bg-purple-600 hover:bg-purple-700 text-white" onClick={() => setIsMobileMenuOpen(false)}>
+                          <Link to="/auth">Login</Link>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+        </div>
       </div>
-    </nav>
-  );
+    </nav>;
 };
-
 export default NavBar;

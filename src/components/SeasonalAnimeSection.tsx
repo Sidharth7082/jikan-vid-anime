@@ -1,6 +1,4 @@
-
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { fetchTopAnime } from "@/lib/api";
 import SeasonalAnimeCard from "./SeasonalAnimeCard";
 
@@ -16,7 +14,7 @@ const SeasonalAnimeSection: React.FC<SeasonalAnimeSectionProps> = ({ onCardClick
     const loadSeasonalAnime = async () => {
       setLoading(true);
       try {
-        const result = await fetchTopAnime();
+        const result = await fetchTopAnime(); // Remove the "airing" parameter as it expects a number
         setSeasonalAnime(result.data);
       } catch (e) {
         console.error("Failed to fetch seasonal anime:", e);
@@ -50,12 +48,9 @@ const SeasonalAnimeSection: React.FC<SeasonalAnimeSectionProps> = ({ onCardClick
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-white">Most Popular Anime</h2>
-          <Link 
-            to="/most-popular"
-            className="text-[#ffb800] hover:text-[#ff9500] font-medium text-sm transition-colors"
-          >
+          <button className="text-[#ffb800] hover:text-[#ff9500] font-medium text-sm transition-colors">
             View All →
-          </Link>
+          </button>
         </div>
         
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
