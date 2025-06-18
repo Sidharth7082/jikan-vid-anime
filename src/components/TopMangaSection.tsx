@@ -1,120 +1,140 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useEffect, useState, useCallback } from 'react';
 import { fetchTopManga } from "@/lib/api";
-import MangaCard from "./MangaCard";
-interface Manga {
-  mal_id: number;
-  url: string;
-  images: {
-    jpg: {
-      image_url: string;
-      small_image_url: string;
-      large_image_url: string;
-    };
-    webp: {
-      image_url: string;
-      small_image_url: string;
-      large_image_url: string;
-    };
-  };
-  title: string;
-  rank: number;
-  score: number;
-  scored_by: number;
-  start_date: string;
-  end_date: string | null;
-  chapters: number | null;
-  volumes: number | null;
-  status: string;
-  type: string;
-  synopsis: string;
-  background: string | null;
-  authors: Array<{
-    mal_id: number;
-    type: string;
-    name: string;
-    url: string;
-  }>;
-  serializations: Array<{
-    mal_id: number;
-    type: string;
-    name: string;
-    url: string;
-  }>;
-  genres: Array<{
-    mal_id: number;
-    type: string;
-    name: string;
-    url: string;
-  }>;
-  explicit_genres: Array<{
-    mal_id: number;
-    type: string;
-    name: string;
-    url: string;
-  }>;
-  themes: Array<{
-    mal_id: number;
-    type: string;
-    name: string;
-    url: string;
-  }>;
-  demographics: Array<{
-    mal_id: number;
-    type: string;
-    name: string;
-    url: string;
-  }>;
-  publishing: boolean; // Add the missing publishing property
-}
-const TopMangaSection: React.FC = () => {
-  const [mangaList, setMangaList] = useState<Manga[]>([]);
+import MangaCard from "@/components/MangaCard";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/hooks/use-toast";
+import { BookMarked } from "lucide-react";
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+
+const TopMangaSection = () => {
+  const [mangaList, setMangaList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    const loadTopManga = async () => {
-      setLoading(true);
-      try {
-        const result = await fetchTopManga();
-        // Add the publishing property based on status
-        const mangaWithPublishing = result.data.map((manga: any) => ({
-          ...manga,
-          publishing: manga.status === 'Publishing' || manga.status === 'Ongoing'
-        }));
-        setMangaList(mangaWithPublishing);
-      } catch (e) {
-        console.error("Failed to fetch top manga:", e);
-      }
-      setLoading(false);
-    };
-    loadTopManga();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationInfo, setPaginationInfo] = useState<any>(null);
+
+  const loadTopManga = useCallback(async (page: number) => {
+    setLoading(true);
+    try {
+      const result = await fetchTopManga(page);
+      setMangaList(result.data);
+      setPaginationInfo(result.pagination);
+      // Removed window.scrollTo(0,0) as it can be jarring.
+      // The user can scroll up if they wish.
+    } catch (e) {
+      toast({
+        title: "Failed to fetch top manga.",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
   }, []);
-  if (loading) {
-    return <section className="py-8 px-3 sm:px-8 bg-[#0b1426]">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-            {Array.from({
-            length: 12
-          }).map((_, index) => <div key={index} className="animate-pulse">
-                <div className="bg-[#1f2937] rounded-lg aspect-[3/4] mb-3"></div>
-                <div className="bg-[#1f2937] h-4 rounded mb-2"></div>
-                <div className="bg-[#1f2937] h-3 rounded w-3/4"></div>
-              </div>)}
-          </div>
-        </div>
-      </section>;
+
+  useEffect(() => {
+    loadTopManga(currentPage);
+  }, [currentPage, loadTopManga]);
+  
+  const handlePageChange = (page: number) => {
+    if (page > 0 && paginationInfo && page <= paginationInfo.last_visible_page) {
+      setCurrentPage(page);
+    }
+  };
+
+  const renderPagination = () => {
+    if (!paginationInfo) return null;
+
+    const { current_page, last_visible_page } = paginationInfo;
+    const pages = [];
+    const pageLimit = 5;
+    const middle = Math.ceil(pageLimit / 2);
+    let start = current_page - middle + 1;
+    let end = start + pageLimit - 1;
+
+    if (start < 1) {
+      start = 1;
+      end = Math.min(pageLimit, last_visible_page);
+    }
+
+    if (end > last_visible_page) {
+      end = last_visible_page;
+      start = Math.max(1, end - pageLimit + 1);
+    }
+
+    if (start > 1) {
+      pages.push(<PaginationItem key="start-ellipsis"><PaginationEllipsis /></PaginationItem>);
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(
+        <PaginationItem key={i}>
+          <PaginationLink href="#" isActive={i === current_page} onClick={(e) => { e.preventDefault(); handlePageChange(i); }}>
+            {i}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+    
+    if (end < last_visible_page) {
+      pages.push(<PaginationItem key="end-ellipsis"><PaginationEllipsis /></PaginationItem>);
+    }
+
+    return pages;
   }
-  return <section className="py-8 px-3 sm:px-8 bg-[#0b1426]">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">Manga section</h2>
-          <button className="text-[#ffb800] hover:text-[#ff9500] font-medium text-sm transition-colors">
-            View All →
-          </button>
-        </div>
-        
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {mangaList.map(manga => <MangaCard key={manga.mal_id} manga={manga} onClick={() => {}} />)}
+
+  return (
+    <div id="top-manga" className="max-w-7xl mx-auto w-full px-3 sm:px-8">
+      <div className="flex items-start md:items-center justify-between mt-12 mb-6 flex-col md:flex-row gap-4">
+        <div className="flex items-center gap-3">
+            <div className="bg-purple-100 p-2 rounded-lg">
+                <BookMarked className="text-purple-600 w-6 h-6" />
+            </div>
+            <div>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-zinc-900 tracking-tight">Top Manga</h2>
+                <p className="text-zinc-500">The highest-rated manga on MyAnimeList</p>
+            </div>
         </div>
       </div>
-    </section>;
+      {loading ? (
+        <section className="mt-4 grid gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          {[...Array(25)].map((_, idx) => (
+            <Skeleton key={idx} className="rounded-lg w-full h-[350px] bg-zinc-200" />
+          ))}
+        </section>
+      ) : (
+        <>
+          <section className="mt-2 grid gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            {mangaList.map((manga: any) => (
+              <MangaCard
+                key={manga.mal_id}
+                manga={manga}
+                onClick={() => toast({ description: `Opening details for ${manga.title}` })}
+              />
+            ))}
+          </section>
+          {paginationInfo && paginationInfo.last_visible_page > 1 && (
+            <div className="mt-8 flex justify-center pb-8">
+              <Pagination>
+                <PaginationContent>
+                  {paginationInfo.has_previous_page && (
+                    <PaginationItem>
+                      <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }} />
+                    </PaginationItem>
+                  )}
+                  {renderPagination()}
+                  {paginationInfo.has_next_page && (
+                    <PaginationItem>
+                      <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }} />
+                    </PaginationItem>
+                  )}
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
 };
+
 export default TopMangaSection;

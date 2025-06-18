@@ -1,82 +1,80 @@
 import React from "react";
-import { Play, Star } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { ImageIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-interface AnimeCardProps {
-  anime: any;
+interface Props {
+  anime: {
+    mal_id: number;
+    title: string;
+    images: { jpg: { image_url: string }; webp?: { image_url: string } };
+    score?: number;
+    genres?: { name: string }[];
+  };
   onClick: () => void;
-  className?: string; // Add optional className prop
+  className?: string;
+  badgeClass?: string;
 }
 
-const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onClick, className }) => {
-  const imageUrl = anime.images?.webp?.large_image_url || anime.images?.jpg?.large_image_url;
-  const title = anime.title || anime.title_english || "Unknown Title";
-  const score = anime.score || 0;
-  const year = anime.year || anime.aired?.prop?.from?.year || "N/A";
-  const status = anime.status || "Unknown";
-  const episodes = anime.episodes || "?";
-
-  return (
-    <div
-      className={`group cursor-pointer transform transition-all duration-300 hover:scale-105 ${className || ''}`}
-      onClick={onClick}
-    >
-      <div className="relative overflow-hidden rounded-lg bg-[#1f2937] shadow-lg">
-        {/* Poster Image */}
-        <div className="relative aspect-[3/4] overflow-hidden">
-          <img
-            src={imageUrl || "/placeholder.svg"}
-            alt={title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-            loading="lazy"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = "/placeholder.svg";
-            }}
-          />
-          
-          {/* Play Overlay */}
-          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-            <div className="bg-[#ffb800] rounded-full p-3 transform scale-75 group-hover:scale-100 transition-transform duration-300">
-              <Play className="w-6 h-6 text-black fill-current" />
-            </div>
-          </div>
-
-          {/* Episode Count */}
-          {episodes !== "?" && (
-            <div className="absolute top-2 left-2 bg-[#ffb800] text-black px-2 py-1 rounded text-xs font-semibold">
-              {episodes === null ? "Movie" : `${episodes} EP`}
-            </div>
-          )}
-
-          {/* Score Badge */}
-          {score > 0 && (
-            <div className="absolute top-2 right-2 bg-black/80 text-[#ffb800] px-2 py-1 rounded flex items-center gap-1 text-xs font-semibold">
-              <Star className="w-3 h-3 fill-current" />
-              {score.toFixed(1)}
-            </div>
-          )}
-
-          {/* Status Badge */}
-          <div className="absolute bottom-2 left-2 bg-black/80 text-white px-2 py-1 rounded text-xs font-medium">
-            {status}
-          </div>
+const AnimeCard: React.FC<Props> = ({ anime, onClick, className, badgeClass }) => (
+  <Card
+    className={cn("relative group p-0 cursor-pointer transition-transform duration-200 hover:scale-[1.06] hover:z-20 focus:z-20 focus:ring-2 ring-[#e50914] bg-gradient-to-b from-[#232526dd] to-[#19191ea8] shadow-xl overflow-hidden flex flex-col", className)}
+    tabIndex={0}
+    aria-label={anime.title}
+    onClick={onClick}
+    onKeyUp={(e) => (e.key === "Enter" || e.key === " ") && onClick()}
+    style={{
+      minHeight: 0,
+      boxShadow: "0 8px 32px 0 rgba(10,10,13,0.60)",
+    }}
+  >
+    <div className="overflow-hidden rounded-b-xl flex-shrink-0">
+      {anime.images?.webp?.image_url || anime.images?.jpg?.image_url ? (
+        <img
+          src={anime.images.webp?.image_url || anime.images.jpg.image_url}
+          alt={anime.title}
+          className="aspect-[2/3] w-full object-cover group-hover:scale-105 transition-transform duration-200 group-hover:brightness-90"
+          loading="lazy"
+          draggable={false}
+          aria-hidden
+        />
+      ) : (
+        <div className="aspect-[2/3] w-full flex items-center justify-center bg-zinc-900 text-zinc-700">
+          <ImageIcon className="w-12 h-12" />
         </div>
-
-        {/* Card Info */}
-        <div className="p-3">
-          <h3 className="text-white font-semibold text-sm line-clamp-2 mb-1 group-hover:text-[#ffb800] transition-colors">
-            {title}
-          </h3>
-          <div className="flex items-center justify-between text-xs text-[#9ca3af]">
-            <span>{year}</span>
-            <span className="capitalize">
-              {anime.type?.toLowerCase() || "TV"}
-            </span>
-          </div>
-        </div>
+      )}
+      {/* Glass gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-200 pointer-events-none" />
+    </div>
+    <div className="flex-1 flex flex-col px-3 pb-3 pt-2 z-10 min-h-0 justify-between">
+      <h3
+        className="font-extrabold text-base mb-1 text-white truncate"
+        title={anime.title}
+        style={{
+          textShadow: "0 2px 10px rgba(0,0,0,0.4)",
+        }}
+      >
+        {anime.title}
+      </h3>
+      <div className="flex flex-wrap gap-1 text-xs mb-1 text-neutral-300">
+        {anime.genres?.slice(0, 2).map((g) => (
+          <span
+            className="bg-[#232323bb] rounded px-2 py-0.5"
+            key={g.name}
+          >
+            {g.name}
+          </span>
+        ))}
+      </div>
+      <div className="mt-auto text-sm flex items-center gap-2">
+        {!!anime.score && (
+          <span className={cn("bg-[#e50914] text-white rounded px-2 py-0.5 font-bold animate-fade-in shadow shadow-[#e50914]/40 tracking-wide drop-shadow", badgeClass)}>
+            ★ {anime.score}
+          </span>
+        )}
       </div>
     </div>
-  );
-};
+  </Card>
+);
 
 export default AnimeCard;

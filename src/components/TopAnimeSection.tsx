@@ -1,6 +1,8 @@
-
-import React from "react";
-import AnimeCard from "./AnimeCard";
+import { Link } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
+import AnimeCard from "@/components/AnimeCard";
+import { Star } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface TopAnimeSectionProps {
   loading: boolean;
@@ -8,50 +10,44 @@ interface TopAnimeSectionProps {
   onCardClick: (anime: any) => void;
 }
 
-const TopAnimeSection: React.FC<TopAnimeSectionProps> = ({
-  loading,
-  animeList,
-  onCardClick,
-}) => {
-  if (loading) {
-    return (
-      <section className="py-8 px-3 sm:px-8 bg-[#0b1426]">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-            {Array.from({ length: 12 }).map((_, index) => (
-              <div key={index} className="animate-pulse">
-                <div className="bg-[#1f2937] rounded-lg aspect-[3/4] mb-3"></div>
-                <div className="bg-[#1f2937] h-4 rounded mb-2"></div>
-                <div className="bg-[#1f2937] h-3 rounded w-3/4"></div>
-              </div>
-            ))}
+const TopAnimeSection = ({ loading, animeList, onCardClick }: TopAnimeSectionProps) => {
+  return (
+    <div id="top-anime" className="max-w-7xl mx-auto w-full px-3 sm:px-8 pb-2">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mt-12 mb-6 gap-4">
+        <div className="flex items-center gap-3">
+          <Star className="text-purple-600 w-7 h-7" />
+          <div>
+            <h2 className="text-2xl md:text-3xl font-extrabold text-zinc-900 tracking-tight drop-shadow">Top Anime</h2>
+            <p className="text-zinc-500">Highest rated on MyAnimeList</p>
           </div>
         </div>
-      </section>
-    );
-  }
-
-  return (
-    <section className="py-8 px-3 sm:px-8 bg-[#0b1426]">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">Top Airing Anime</h2>
-          <button className="text-[#ffb800] hover:text-[#ff9500] font-medium text-sm transition-colors">
-            View All →
-          </button>
-        </div>
-        
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {animeList.map((anime) => (
+        <Link to="/browse/all" className="text-purple-700 font-medium underline underline-offset-2 transition hover:text-purple-500 self-end md:self-center">View All →</Link>
+      </div>
+      {loading ? (
+        <section className="mt-4 grid gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          {[...Array(12)].map((_, idx) => (
+            <Skeleton
+              key={idx}
+              className="aspect-[2/3] rounded-2xl w-full h-64 bg-gradient-to-b from-zinc-100 to-zinc-200 animate-pulse"
+            />
+          ))}
+        </section>
+      ) : (
+        <section className={cn(
+          "mt-2 grid gap-7 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+        )}>
+          {animeList.slice(1, 13).map((anime: any) => (
             <AnimeCard
               key={anime.mal_id}
               anime={anime}
               onClick={() => onCardClick(anime)}
+              className="shadow-md rounded-2xl hover:scale-105 transition group bg-white"
+              badgeClass="bg-gradient-to-r from-yellow-400 to-orange-400 text-white drop-shadow"
             />
           ))}
-        </div>
-      </div>
-    </section>
+        </section>
+      )}
+    </div>
   );
 };
 
