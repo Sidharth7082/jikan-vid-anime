@@ -64,7 +64,7 @@ const Browse = () => {
     setLoading(false);
   };
   
-  const handleSearch = async () => {};
+  const handleSearch = () => {};
 
   const pageTitle = letter === 'all' ? 'Top Anime Series' : `Anime starting with "${letter?.toUpperCase()}"`;
 

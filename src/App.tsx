@@ -1,7 +1,5 @@
-
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Index from "./pages/Index";
 import Browse from "./pages/Browse";
 import GifsPage from "./pages/GifsPage";
@@ -15,14 +13,13 @@ import DMCAPage from "./pages/DMCAPage";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient } from "react-query";
 import TopAiringPage from "./pages/TopAiringPage";
 import MostPopularPage from "./pages/MostPopularPage";
 
-const queryClient = new QueryClient();
-
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryClient>
       <TooltipProvider>
         <Toaster />
         <BrowserRouter>
@@ -43,8 +40,9 @@ function App() {
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
-    </QueryClientProvider>
+    </QueryClient>
   );
 }
 
 export default App;
+

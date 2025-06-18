@@ -34,7 +34,7 @@ const SocialButton = ({ href, icon, label }: { href: string; icon: React.ReactNo
 
 const ContactPage = () => {
     const navigate = useNavigate();
-    const handleSearch = async (anime: any) => {
+    const handleSearch = (anime: any) => {
         if (anime) {
             navigate("/");
         }
