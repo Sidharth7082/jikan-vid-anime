@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search, User, ChevronDown, Settings, LogIn } from "lucide-react";
@@ -29,7 +30,7 @@ const NavBar: React.FC<NavBarProps> = ({ onSearch }) => {
     try {
       const results = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&limit=5`);
       const data = await results.json();
-      setSearchResults(data.data);
+      setSearchResults(data.data || []);
       setSelectedIndex(-1);
     } catch (error) {
       console.error("Error fetching search results:", error);
@@ -46,13 +47,18 @@ const NavBar: React.FC<NavBarProps> = ({ onSearch }) => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Add safety checks for searchResults
+    if (!searchResults || !Array.isArray(searchResults)) {
+      return;
+    }
+
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setSelectedIndex((prevIndex) => (prevIndex < searchResults.length - 1 ? prevIndex + 1 : searchResults.length - 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setSelectedIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : 0));
-    } else if (e.key === "Enter" && selectedIndex !== -1) {
+    } else if (e.key === "Enter" && selectedIndex !== -1 && searchResults[selectedIndex]) {
       e.preventDefault();
       handleResultClick(searchResults[selectedIndex]);
     }
@@ -117,8 +123,8 @@ const NavBar: React.FC<NavBarProps> = ({ onSearch }) => {
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#9ca3af] w-4 h-4" />
               
-              {/* Search Results Dropdown */}
-              {searchResults.length > 0 && (
+              {/* Search Results Dropdown - Add safety check */}
+              {searchResults && Array.isArray(searchResults) && searchResults.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-[#1f2937] border border-[#374151] rounded-lg shadow-lg max-h-96 overflow-y-auto z-50">
                   {searchResults.map((anime, index) => (
                     <div
