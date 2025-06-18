@@ -1,358 +1,279 @@
-
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
-import { toast } from "sonner";
-import { Settings as SettingsIcon, X } from "lucide-react";
-import NavBar from "@/components/NavBar";
-import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-
-const settingsFormSchema = z.object({
-  autoNext: z.boolean().default(true),
-  autoPlay: z.boolean().default(true),
-  autoSkipIntro: z.boolean().default(false),
-  enableDub: z.boolean().default(false),
-  playOriginalAudio: z.boolean().default(false),
-  animeNameLanguage: z.enum(["english", "japanese"]).default("english"),
-  showCommentsAtHome: z.boolean().default(true),
-  publicWatchList: z.boolean().default(false),
-  notificationIgnoreFolders: z.object({
-    watching: z.boolean().default(false),
-    onHold: z.boolean().default(false),
-    planToWatch: z.boolean().default(false),
-    dropped: z.boolean().default(true),
-    completed: z.boolean().default(true),
-  }),
-  notificationIgnoreLanguage: z.enum(["none", "sub", "dub"]).default("none"),
-});
-
-type SettingsFormValues = z.infer<typeof settingsFormSchema>;
-
-const defaultSettings: SettingsFormValues = {
-  autoNext: true,
-  autoPlay: true,
-  autoSkipIntro: false,
-  enableDub: false,
-  playOriginalAudio: false,
-  animeNameLanguage: "english",
-  showCommentsAtHome: true,
-  publicWatchList: false,
-  notificationIgnoreFolders: {
-    watching: false,
-    onHold: false,
-    planToWatch: false,
-    dropped: true,
-    completed: true,
-  },
-  notificationIgnoreLanguage: "none",
-};
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import NavBar from '@/components/NavBar';
+import Footer from '@/components/Footer';
+import { supabase } from '@/integrations/supabase/client';
+import { User } from '@supabase/supabase-js';
+import { toast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Settings, Shield, Trash2, Key, User as UserIcon } from 'lucide-react';
 
 const SettingsPage = () => {
   const navigate = useNavigate();
-  const form = useForm<SettingsFormValues>({
-    resolver: zodResolver(settingsFormSchema),
-    defaultValues: defaultSettings,
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   useEffect(() => {
+    getUser();
+  }, []);
+
+  const getUser = async () => {
     try {
-      const userSettings = localStorage.getItem("userSettings");
-      if (userSettings) {
-        form.reset(JSON.parse(userSettings));
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        navigate('/auth');
+        return;
       }
+
+      setUser(user);
     } catch (error) {
-      console.error("Failed to parse user settings from localStorage", error);
+      console.error('Error loading user data:', error);
+      toast({
+        title: 'Error loading user data',
+        description: 'There was an error loading your account information.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
     }
-  }, [form]);
+  };
 
-  function onSubmit(data: SettingsFormValues) {
-    localStorage.setItem("userSettings", JSON.stringify(data));
-    toast.success("Settings saved successfully!");
-  }
+  const handlePasswordUpdate = async () => {
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: 'Passwords do not match',
+        description: 'Please ensure both password fields match.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
-  const handleSearch = (anime: any) => {
+    if (newPassword.length < 6) {
+      toast({
+        title: 'Password too short',
+        description: 'Password must be at least 6 characters long.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Password updated',
+        description: 'Your password has been successfully updated.',
+      });
+      
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error: any) {
+      toast({
+        title: 'Error updating password',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    toast({
+      title: 'Account deletion not available',
+      description: 'Please contact support to delete your account.',
+      variant: 'destructive',
+    });
+  };
+
+  const handleSearch = async (anime: any) => {
     if (anime) {
       navigate("/");
     }
   };
 
-  const ignoreFolders = [
-    { id: "watching", label: "Watching" },
-    { id: "onHold", label: "On-Hold" },
-    { id: "planToWatch", label: "Plan to Watch" },
-    { id: "dropped", label: "Dropped" },
-    { id: "completed", label: "Completed" },
-  ] as const;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#e0e0ff]/60 via-[#f8f4fa]/60 to-[#faf6fb]/90">
+        <NavBar onSearch={handleSearch} />
+        <main className="flex-1 container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-48 mb-6"></div>
+              <div className="space-y-4">
+                <div className="h-24 bg-gray-200 rounded"></div>
+                <div className="h-48 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#e0e0ff]/60 via-[#f8f4fa]/60 to-[#faf6fb]/90">
+        <NavBar onSearch={handleSearch} />
+        <main className="flex-1 container mx-auto px-4 py-8 flex items-center justify-center">
+          <Card className="w-full max-w-md">
+            <CardHeader className="text-center">
+              <CardTitle>Access Denied</CardTitle>
+              <CardDescription>You need to be logged in to view this page.</CardDescription>
+            </CardHeader>
+            <CardContent className="text-center">
+              <Button onClick={() => navigate('/auth')} className="w-full">
+                Sign In
+              </Button>
+            </CardContent>
+          </Card>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#181520] text-gray-300">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#e0e0ff]/60 via-[#f8f4fa]/60 to-[#faf6fb]/90">
       <NavBar onSearch={handleSearch} />
-      <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
-        <div className="flex items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-4 text-white">
-            <SettingsIcon className="w-8 h-8" />
-            <h1 className="text-3xl font-bold">Settings</h1>
+      <main className="flex-1 container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto space-y-8">
+          <div className="flex items-center gap-2">
+            <Settings className="w-8 h-8 text-gray-700" />
+            <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(-1)}
-            className="text-white hover:bg-gray-700/50"
-          >
-            <X className="w-8 h-8" />
-          </Button>
-        </div>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <div className="space-y-6">
-              <SettingItem>
-                <SettingLabel>Auto Next</SettingLabel>
-                <FormField
-                  control={form.control}
-                  name="autoNext"
-                  render={({ field }) => (
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  )}
-                />
-              </SettingItem>
-
-              <SettingItem>
-                <SettingLabel>Auto Play</SettingLabel>
-                <FormField
-                  control={form.control}
-                  name="autoPlay"
-                  render={({ field }) => (
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  )}
-                />
-              </SettingItem>
-
-              <SettingItem>
-                <SettingLabel>Auto Skip Intro</SettingLabel>
-                <FormField
-                  control={form.control}
-                  name="autoSkipIntro"
-                  render={({ field }) => (
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  )}
-                />
-              </SettingItem>
-
-              <SettingItem>
-                <SettingLabel>Enable DUB</SettingLabel>
-                <FormField
-                  control={form.control}
-                  name="enableDub"
-                  render={({ field }) => (
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  )}
-                />
-              </SettingItem>
-
-              <SettingItem>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <UserIcon className="w-5 h-5" />
+                  Account Information
+                </CardTitle>
+                <CardDescription>
+                  View your account details
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div>
-                  <SettingLabel>Play Original Audio</SettingLabel>
-                  <p className="text-sm text-gray-400">
-                    If enabled, the player will play original audio by default.
-                  </p>
+                  <Label htmlFor="email" className="text-sm font-medium text-gray-500">Email</Label>
+                  <Input
+                    id="email"
+                    value={user.email || ''}
+                    disabled
+                    className="bg-gray-50"
+                  />
                 </div>
-                <FormField
-                  control={form.control}
-                  name="playOriginalAudio"
-                  render={({ field }) => (
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  )}
-                />
-              </SettingItem>
-
-              <SettingItem>
-                <SettingLabel>Language for anime name</SettingLabel>
-                <FormField
-                  control={form.control}
-                  name="animeNameLanguage"
-                  render={({ field }) => (
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        className="flex items-center gap-4"
-                      >
-                        <FormItem className="flex items-center space-x-2">
-                          <FormControl>
-                            <RadioGroupItem value="english" id="lang-en" />
-                          </FormControl>
-                          <Label htmlFor="lang-en" className="font-normal">English</Label>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-2">
-                          <FormControl>
-                            <RadioGroupItem value="japanese" id="lang-jp" />
-                          </FormControl>
-                          <Label htmlFor="lang-jp" className="font-normal">Japanese</Label>
-                        </FormItem>
-                      </RadioGroup>
-                    </FormControl>
-                  )}
-                />
-              </SettingItem>
-
-              <SettingItem>
-                <SettingLabel>Show comments at home</SettingLabel>
-                <FormField
-                  control={form.control}
-                  name="showCommentsAtHome"
-                  render={({ field }) => (
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  )}
-                />
-              </SettingItem>
-
-              <SettingItem>
-                <SettingLabel>Public Watch List</SettingLabel>
-                <FormField
-                  control={form.control}
-                  name="publicWatchList"
-                  render={({ field }) => (
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  )}
-                />
-              </SettingItem>
-
-              <div className="space-y-2 pt-4 border-t border-gray-800">
-                <SettingLabel>Notification ignore folders</SettingLabel>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 pt-2">
-                  {ignoreFolders.map((item) => (
-                    <FormField
-                      key={item.id}
-                      control={form.control}
-                      name={`notificationIgnoreFolders.${item.id}`}
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center space-x-2 space-y-0">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                          <FormLabel className="font-normal text-gray-300">
-                            {item.label}
-                          </FormLabel>
-                        </FormItem>
-                      )}
-                    />
-                  ))}
+                <div>
+                  <Label htmlFor="created" className="text-sm font-medium text-gray-500">Member Since</Label>
+                  <Input
+                    id="created"
+                    value={new Date(user.created_at).toLocaleDateString()}
+                    disabled
+                    className="bg-gray-50"
+                  />
                 </div>
-              </div>
+              </CardContent>
+            </Card>
 
-              <SettingItem>
-                <SettingLabel>Notification ignore language</SettingLabel>
-                <FormField
-                  control={form.control}
-                  name="notificationIgnoreLanguage"
-                  render={({ field }) => (
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        className="flex items-center gap-4"
-                      >
-                         <FormItem className="flex items-center space-x-2">
-                          <FormControl>
-                            <RadioGroupItem value="none" id="lang-none" />
-                          </FormControl>
-                          <Label htmlFor="lang-none" className="font-normal">None</Label>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-2">
-                          <FormControl>
-                            <RadioGroupItem value="sub" id="lang-sub" />
-                          </FormControl>
-                          <Label htmlFor="lang-sub" className="font-normal">SUB</Label>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-2">
-                          <FormControl>
-                            <RadioGroupItem value="dub" id="lang-dub" />
-                          </FormControl>
-                          <Label htmlFor="lang-dub" className="font-normal">DUB</Label>
-                        </FormItem>
-                      </RadioGroup>
-                    </FormControl>
-                  )}
-                />
-              </SettingItem>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Key className="w-5 h-5" />
+                  Change Password
+                </CardTitle>
+                <CardDescription>
+                  Update your account password
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter new password"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm new password"
+                  />
+                </div>
+                <Button 
+                  onClick={handlePasswordUpdate}
+                  disabled={updating || !newPassword || !confirmPassword}
+                  className="w-full"
+                >
+                  {updating ? 'Updating...' : 'Update Password'}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
 
-            <div className="flex justify-end pt-4">
-              <Button
-                type="submit"
-                size="lg"
-                className="w-full bg-[#f472b6] hover:bg-[#ec4899] text-white text-lg"
-              >
-                Save Settings
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </div>
+          <Card className="border-red-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-red-600">
+                <Trash2 className="w-5 h-5" />
+                Danger Zone
+              </CardTitle>
+              <CardDescription>
+                Irreversible actions that affect your account
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="w-full">
+                    Delete Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete your account
+                      and remove your data from our servers.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteAccount} className="bg-red-600 hover:bg-red-700">
+                      Delete Account
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 };
-
-const SettingItem = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex items-center justify-between border-b border-gray-800 py-4">
-    {children}
-  </div>
-);
-
-const SettingLabel = ({ children }: { children: React.ReactNode }) => (
-  <p className="text-base font-medium text-white">{children}</p>
-);
 
 export default SettingsPage;
