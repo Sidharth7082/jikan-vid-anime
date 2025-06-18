@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback } from "react";
 import { fetchTopAnime, fetchAnimeDetails } from "@/lib/api";
 import AnimeDetailModal from "@/components/AnimeDetailModal";
@@ -16,8 +17,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // Loader overlay for async actions
 const LoaderOverlay = ({ show }: { show: boolean }) =>
   show ? (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md pointer-events-none animate-fade-in">
-      <span className="w-16 h-16 rounded-full border-4 border-[#e50914] border-t-white animate-spin block" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-none animate-fade-in">
+      <span className="w-16 h-16 rounded-full border-4 border-[#ffb800] border-t-transparent animate-spin block" />
     </div>
   ) : null;
 
@@ -35,8 +36,6 @@ const Index = () => {
   const [waifuImg, setWaifuImg] = useState<string | undefined>();
   const [waifuName, setWaifuName] = useState<string | undefined>();
   const [waifuLoading, setWaifuLoading] = useState(false);
-
-  // For future: you may introduce tabs for 'seasonal', 'random', etc.
 
   const pickRandomFeaturedAnime = useCallback((list: any[]) => {
     if (list && list.length > 0) {
@@ -100,7 +99,7 @@ const Index = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex flex-col w-full bg-gradient-to-br from-[#e0e0ff]/60 via-[#f8f4fa]/60 to-[#faf6fb]/90">
+      <div className="min-h-screen flex flex-col w-full bg-[#0b1426]">
         <NavBar onSearch={handleSearchResult} />
 
         <HeroBanner
@@ -115,29 +114,46 @@ const Index = () => {
           <LoaderOverlay show={loading || waifuLoading} />
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="flex justify-center border-b bg-white/30 backdrop-blur-sm sticky top-16 z-10">
+            <div className="flex justify-center border-b border-[#1f2937] bg-[#0f1824] sticky top-16 z-10">
               <div className="max-w-7xl w-full px-3 sm:px-8">
-                <TabsList className="bg-transparent p-0 h-14">
-                  <TabsTrigger value="top-anime" className="text-base font-semibold text-zinc-600 data-[state=active]:text-purple-700 data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-purple-700 rounded-none h-full px-5">Top Anime</TabsTrigger>
-                  <TabsTrigger value="seasonal" className="text-base font-semibold text-zinc-600 data-[state=active]:text-purple-700 data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-purple-700 rounded-none h-full px-5">Seasonal</TabsTrigger>
-                  <TabsTrigger value="top-manga" className="text-base font-semibold text-zinc-600 data-[state=active]:text-purple-700 data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-purple-700 rounded-none h-full px-5">Manga</TabsTrigger>
+                <TabsList className="bg-transparent p-0 h-14 border-none">
+                  <TabsTrigger 
+                    value="top-anime" 
+                    className="text-base font-semibold text-[#9ca3af] data-[state=active]:text-[#ffb800] data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-[#ffb800] rounded-none h-full px-6 hover:text-[#ffb800] transition-colors bg-transparent"
+                  >
+                    Top Airing
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="seasonal" 
+                    className="text-base font-semibold text-[#9ca3af] data-[state=active]:text-[#ffb800] data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-[#ffb800] rounded-none h-full px-6 hover:text-[#ffb800] transition-colors bg-transparent"
+                  >
+                    Most Popular
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="top-manga" 
+                    className="text-base font-semibold text-[#9ca3af] data-[state=active]:text-[#ffb800] data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-[#ffb800] rounded-none h-full px-6 hover:text-[#ffb800] transition-colors bg-transparent"
+                  >
+                    Completed
+                  </TabsTrigger>
                 </TabsList>
               </div>
             </div>
             
-            <TabsContent value="top-anime" className="mt-0">
-              <TopAnimeSection
-                loading={loading}
-                animeList={animeList}
-                onCardClick={handleCardClick}
-              />
-            </TabsContent>
-            <TabsContent value="seasonal" className="mt-0">
-              <SeasonalAnimeSection onCardClick={handleCardClick} />
-            </TabsContent>
-            <TabsContent value="top-manga" className="mt-0">
-              <TopMangaSection />
-            </TabsContent>
+            <div className="bg-[#0b1426]">
+              <TabsContent value="top-anime" className="mt-0">
+                <TopAnimeSection
+                  loading={loading}
+                  animeList={animeList}
+                  onCardClick={handleCardClick}
+                />
+              </TabsContent>
+              <TabsContent value="seasonal" className="mt-0">
+                <SeasonalAnimeSection onCardClick={handleCardClick} />
+              </TabsContent>
+              <TabsContent value="top-manga" className="mt-0">
+                <TopMangaSection />
+              </TabsContent>
+            </div>
           </Tabs>
 
           <ImageGallerySection />
@@ -154,11 +170,10 @@ const Index = () => {
           gifUrl={waifuImg}
           name={waifuName}
         />
-        {/* You can add other sections like Seasonal/Random here */}
         <Footer />
       </div>
       {/* Mobile Sidebar Trigger */}
-      <SidebarTrigger className="fixed top-4 left-4 z-[100] md:hidden bg-white/80 rounded-full p-2 shadow-lg ring-1 ring-zinc-900 hover:bg-purple-200/90 hover:text-purple-800 transition" />
+      <SidebarTrigger className="fixed top-4 left-4 z-[100] md:hidden bg-[#1f2937]/90 rounded-full p-2 shadow-lg ring-1 ring-[#374151] hover:bg-[#ffb800]/20 hover:text-[#ffb800] transition text-white" />
     </SidebarProvider>
   );
 };
