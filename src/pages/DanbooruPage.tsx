@@ -39,7 +39,7 @@ const DanbooruPage = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex flex-col w-full bg-gradient-to-br from-[#e0eff]/60 via-[#f8f4fa]/60 to-[#faf6fb]/90">
-        <NavBar onSearch={() => {}} />
+        <NavBar onSearch={async () => {}} />
 
         {/* Main Content */}
         <main className="flex-1 w-full py-10">

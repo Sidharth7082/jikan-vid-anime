@@ -1,4 +1,3 @@
-
 import React from 'react';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
@@ -15,7 +14,7 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 
 const TermsOfServicePage = () => {
     const navigate = useNavigate();
-    const handleSearch = (anime: any) => {
+    const handleSearch = async (anime: any) => {
         if (anime) {
             navigate("/");
         }
@@ -48,7 +47,7 @@ const TermsOfServicePage = () => {
                     </Section>
 
                     <Section title="3. Disclaimer">
-                        <p>All the materials on captureordie's Website are provided "as is". captureordie makes no warranties, may it be expressed or implied, therefore negates all other warranties. Furthermore, captureordie does not make any representations concerning the accuracy or reliability of the use of the materials on its Website or otherwise relating to such materials or any sites linked to this Website.</p>
+                        <p>All the materials on captureordie's Website are provided "as is". captureordie makes no warranties, may it be expressed or implied, therefore negates all other warranties. Furthermore, captureordie does not make any commitments concerning the accuracy or reliability of the use of the materials on its Website or otherwise relating to such materials or any sites linked to this Website.</p>
                     </Section>
 
                     <Section title="4. Limitations">
