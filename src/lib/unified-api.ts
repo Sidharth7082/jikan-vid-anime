@@ -152,3 +152,79 @@ export async function consolidateVideoSources(
   console.log(`Fetching video sources for AnimeFLV ID: ${animeFlvId}, Episode: ${episodeNumber}`);
   return await fetchVideoSources(animeFlvId, episodeNumber);
 }
+
+export const fetchUnifiedAnimeDetails = async (malId: string): Promise<any> => {
+  try {
+    console.log(`Loading content details for MAL ID: ${malId}`);
+    
+    // First, get the basic anime details from Jikan (which is in English)
+    const jikanResponse = await fetch(`https://api.jikan.moe/v4/anime/${malId}`);
+    const jikanData = await jikanResponse.json();
+    
+    if (!jikanData.data) {
+      throw new Error('Anime not found');
+    }
+
+    const anime = jikanData.data;
+    
+    // Prepare the unified response with English content from Jikan
+    const unifiedResponse = {
+      source_type: "Jikan",
+      content_type: "anime",
+      mal_id: malId,
+      title: anime.title || anime.title_english || "Unknown Title",
+      title_english: anime.title_english || anime.title,
+      title_japanese: anime.title_japanese,
+      poster: anime.images?.webp?.large_image_url || anime.images?.jpg?.large_image_url,
+      synopsis: anime.synopsis || "No synopsis available.",
+      episodes_count: anime.episodes || 0,
+      status: anime.status || "Unknown",
+      score: anime.score || 0,
+      genres: anime.genres?.map((g: any) => g.name) || [],
+      release_year: anime.aired?.from ? new Date(anime.aired.from).getFullYear() : "Unknown",
+      type: anime.type || "TV",
+      duration: anime.duration,
+      rating: anime.rating,
+      studios: anime.studios?.map((s: any) => s.name) || [],
+      aired: anime.aired,
+      broadcast: anime.broadcast,
+      producers: anime.producers?.map((p: any) => p.name) || [],
+      licensors: anime.licensors?.map((l: any) => l.name) || [],
+    };
+
+    // Try to get additional streaming info from AnimeFLV but keep English as primary language
+    try {
+      const title = anime.title || anime.title_english;
+      console.log(`Attempting to find '${title}' on AnimeFLV for streaming options...`);
+      
+      const animeflvResponse = await fetch(`https://api.consumet.org/anime/animeflv/${encodeURIComponent(title)}`);
+      
+      if (animeflvResponse.ok) {
+        const animeflvData = await animeflvResponse.json();
+        
+        if (animeflvData.results && animeflvData.results.length > 0) {
+          const match = animeflvData.results[0];
+          console.log(`Found streaming option: ${match.id}`);
+          
+          // Add streaming info but keep English content
+          unifiedResponse.animeflv_id = match.id;
+          unifiedResponse.streaming_available = true;
+          
+          // Only use AnimeFLV poster if Jikan doesn't have one
+          if (!unifiedResponse.poster && match.image) {
+            unifiedResponse.poster = match.image;
+          }
+        }
+      }
+    } catch (streamingError) {
+      console.log('Streaming info not available, using Jikan data only');
+    }
+
+    console.log('Successfully unified details with English content prioritized');
+    return unifiedResponse;
+    
+  } catch (error) {
+    console.error('Error fetching unified anime details:', error);
+    throw error;
+  }
+};
