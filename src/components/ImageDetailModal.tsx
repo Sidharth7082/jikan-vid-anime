@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
@@ -184,7 +183,7 @@ export const ImageDetailModal: React.FC<ImageDetailModalProps> = ({
                   <img
                     src={imageUrl}
                     alt={post.tag_string_general}
-                    className="max-w-none transition-transform duration-200 ease-out"
+                    className="max-w-full transition-transform duration-200 ease-out"
                     style={{ 
                       transform: `scale(${imageScale})`,
                       imageRendering: imageScale > 1 ? 'pixelated' : 'auto'

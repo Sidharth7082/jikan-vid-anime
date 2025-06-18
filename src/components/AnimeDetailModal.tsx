@@ -58,7 +58,7 @@ const AnimeDetailModal: React.FC<Props> = ({ open, onOpenChange, anime }) => {
         // Fallback to original anime data if detail fetch doesn't have everything
         title: details.title || anime.title,
         poster: details.poster || anime.images?.webp?.large_image_url || anime.images?.jpg?.large_image_url,
-        synopsis: details.synopsis || anime.synopsis,
+        synopsis: anime.synopsis || details.synopsis,
         episodes_count: details.episodes_count || anime.episodes || 1,
         score: details.score || anime.score,
         genres: details.genres || anime.genres?.map((g: any) => g.name) || [],
