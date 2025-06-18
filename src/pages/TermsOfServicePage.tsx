@@ -1,4 +1,3 @@
-
 import React from 'react';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
@@ -15,7 +14,7 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 
 const TermsOfServicePage = () => {
     const navigate = useNavigate();
-    const handleSearch = (anime: any) => {
+    const handleSearch = async (anime: any) => {
         if (anime) {
             navigate("/");
         }

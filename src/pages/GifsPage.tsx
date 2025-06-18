@@ -1,4 +1,3 @@
-
 import React from "react";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
@@ -9,7 +8,7 @@ const GifsPage = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex flex-col w-full bg-gradient-to-br from-[#e0e0ff]/60 via-[#f8f4fa]/60 to-[#faf6fb]/90">
-        <NavBar onSearch={() => {}} />
+        <NavBar onSearch={async () => {}} />
 
         {/* Main Content */}
         <main className="flex-1 w-full py-10">
