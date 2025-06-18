@@ -1,3 +1,4 @@
+
 import React from "react";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
@@ -5,7 +6,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import OtakuGifsGallery from "@/components/OtakuGifsGallery";
 
 const GifsPage = () => {
-  const handleSearch = async () => {};
+  const handleSearch = async (): Promise<void> => {};
 
   return (
     <SidebarProvider>

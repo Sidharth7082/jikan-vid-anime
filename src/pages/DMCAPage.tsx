@@ -14,7 +14,7 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 
 const DMCAPage = () => {
     const navigate = useNavigate();
-    const handleSearch = async (anime: any) => {
+    const handleSearch = async (anime: any): Promise<void> => {
         if (anime) {
             navigate("/");
         }

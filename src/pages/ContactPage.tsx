@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const ContactPage = () => {
     const navigate = useNavigate();
-    const handleSearch = async (anime: any) => {
+    const handleSearch = async (anime: any): Promise<void> => {
         if (anime) {
             navigate("/");
         }

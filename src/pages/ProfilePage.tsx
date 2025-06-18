@@ -76,7 +76,7 @@ const ProfilePage = () => {
     }
   };
 
-  const handleSearch = async (anime: any) => {
+  const handleSearch = async (anime: any): Promise<void> => {
     if (anime) {
       navigate("/");
     }
