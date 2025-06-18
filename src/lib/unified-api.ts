@@ -26,6 +26,32 @@ export interface VideoSource {
   provider: string;
 }
 
+interface UnifiedAnimeResponse {
+  source_type: string;
+  content_type: string;
+  mal_id: string;
+  title: any;
+  title_english: any;
+  title_japanese: any;
+  poster: any;
+  synopsis: any;
+  episodes_count: any;
+  status: any;
+  score: any;
+  genres: any;
+  release_year: any;
+  type: any;
+  duration: any;
+  rating: any;
+  studios: any;
+  aired: any;
+  broadcast: any;
+  producers: any;
+  licensors: any;
+  animeflv_id?: string;
+  streaming_available?: boolean;
+}
+
 async function searchAnimeOnAnimeFLV(query: string): Promise<any[]> {
   const searchUrl = `${ANIMEFLV_API_BASE}/search?query=${encodeURIComponent(query)}`;
   console.log(`Searching AnimeFLV for: ${query}`);
@@ -168,7 +194,7 @@ export const fetchUnifiedAnimeDetails = async (malId: string): Promise<any> => {
     const anime = jikanData.data;
     
     // Prepare the unified response with English content from Jikan
-    const unifiedResponse = {
+    const unifiedResponse: UnifiedAnimeResponse = {
       source_type: "Jikan",
       content_type: "anime",
       mal_id: malId,

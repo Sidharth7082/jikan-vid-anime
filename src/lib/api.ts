@@ -1,3 +1,6 @@
+
+import { fetchUnifiedAnimeDetails } from './unified-api';
+
 const BASE_URL = "https://api.jikan.moe/v4";
 
 export async function fetchTopAnime(page = 1) {
