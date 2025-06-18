@@ -1,13 +1,13 @@
-
 import React from "react";
 import { Play, Star } from "lucide-react";
 
 interface AnimeCardProps {
   anime: any;
   onClick: () => void;
+  className?: string; // Add optional className prop
 }
 
-const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onClick }) => {
+const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onClick, className }) => {
   const imageUrl = anime.images?.webp?.large_image_url || anime.images?.jpg?.large_image_url;
   const title = anime.title || anime.title_english || "Unknown Title";
   const score = anime.score || 0;
@@ -17,7 +17,7 @@ const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onClick }) => {
 
   return (
     <div
-      className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
+      className={`group cursor-pointer transform transition-all duration-300 hover:scale-105 ${className || ''}`}
       onClick={onClick}
     >
       <div className="relative overflow-hidden rounded-lg bg-[#1f2937] shadow-lg">

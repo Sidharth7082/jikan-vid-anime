@@ -14,7 +14,7 @@ const SeasonalAnimeSection: React.FC<SeasonalAnimeSectionProps> = ({ onCardClick
     const loadSeasonalAnime = async () => {
       setLoading(true);
       try {
-        const result = await fetchTopAnime("airing"); // Fetching "airing" anime as seasonal
+        const result = await fetchTopAnime(); // Remove the "airing" parameter as it expects a number
         setSeasonalAnime(result.data);
       } catch (e) {
         console.error("Failed to fetch seasonal anime:", e);

@@ -35,6 +35,7 @@ interface Manga {
   explicit_genres: Array<{ mal_id: number; type: string; name: string; url: string }>;
   themes: Array<{ mal_id: number; type: string; name: string; url: string }>;
   demographics: Array<{ mal_id: number; type: string; name: string; url: string }>;
+  publishing: boolean; // Add the missing publishing property
 }
 
 const TopMangaSection: React.FC = () => {
@@ -46,7 +47,12 @@ const TopMangaSection: React.FC = () => {
       setLoading(true);
       try {
         const result = await fetchTopManga();
-        setMangaList(result.data);
+        // Add the publishing property based on status
+        const mangaWithPublishing = result.data.map((manga: any) => ({
+          ...manga,
+          publishing: manga.status === 'Publishing' || manga.status === 'Ongoing'
+        }));
+        setMangaList(mangaWithPublishing);
       } catch (e) {
         console.error("Failed to fetch top manga:", e);
       }
@@ -89,6 +95,7 @@ const TopMangaSection: React.FC = () => {
             <MangaCard
               key={manga.mal_id}
               manga={manga}
+              onClick={() => {}}
             />
           ))}
         </div>
