@@ -135,7 +135,7 @@ const DanbooruGallery = ({ currentSearch, onTagClick }: { currentSearch: string,
                 </Button>
               </PaginationItem>
               <PaginationItem>
-                <span className="p-2 font-medium text-sm">Page {page}</span>
+                <span className="px-4 py-2 font-medium text-sm text-zinc-700">Page {page}</span>
               </PaginationItem>
               <PaginationItem>
                 <Button 
