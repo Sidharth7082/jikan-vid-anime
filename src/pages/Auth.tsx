@@ -13,6 +13,7 @@ import { UpdatePasswordForm } from "@/components/auth/UpdatePasswordForm";
 
 const AuthPage = () => {
   const [loading, setLoading] = useState(false);
+  const [guestLoading, setGuestLoading] = useState(false);
   const [showResetView, setShowResetView] = useState(false);
   const [showUpdatePassword, setShowUpdatePassword] = useState(false);
   const navigate = useNavigate();
@@ -34,19 +35,51 @@ const AuthPage = () => {
   }, [navigate]);
 
   const handleGuestLogin = async () => {
-    setLoading(true);
-    const { error } = await supabase.auth.signInAnonymously();
-    if (error) {
+    setGuestLoading(true);
+    
+    try {
+      console.log('Creating guest user...');
+      
+      // Call our edge function to create a guest user
+      const { data, error } = await supabase.functions.invoke('guest-auth', {
+        body: { action: 'create_guest' }
+      });
+
+      if (error) {
+        console.error('Guest creation error:', error);
+        throw error;
+      }
+
+      console.log('Guest user created, signing in...');
+
+      // Sign in with the temporary credentials
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: data.credentials.email,
+        password: data.credentials.password,
+      });
+
+      if (signInError) {
+        console.error('Guest sign in error:', signInError);
+        throw signInError;
+      }
+
+      toast({ 
+        title: "Welcome, Guest!", 
+        description: "You're now signed in as a guest user. Your session will expire in 7 days."
+      });
+      
+      navigate("/");
+      
+    } catch (error) {
+      console.error('Guest login failed:', error);
       toast({
         title: "Guest login failed",
-        description: error.message,
+        description: error.message || "An unexpected error occurred",
         variant: "destructive",
       });
-    } else {
-      toast({ title: "Signed in as guest!" });
-      navigate("/");
     }
-    setLoading(false);
+    
+    setGuestLoading(false);
   };
 
   return (
@@ -88,9 +121,19 @@ const AuthPage = () => {
                     </span>
                   </div>
                 </div>
-                <Button variant="outline" onClick={handleGuestLogin} disabled={loading} className="w-full">
-                  Continue as Guest
+                <Button 
+                  variant="outline" 
+                  onClick={handleGuestLogin} 
+                  disabled={guestLoading || loading} 
+                  className="w-full"
+                >
+                  {guestLoading ? "Creating Guest Account..." : "Continue as Guest"}
                 </Button>
+                {!showResetView && (
+                  <p className="text-xs text-center text-muted-foreground mt-2">
+                    Guest sessions expire after 7 days
+                  </p>
+                )}
               </>
             )}
           </CardContent>

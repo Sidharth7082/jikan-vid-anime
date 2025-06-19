@@ -9,6 +9,27 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      guest_users: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           id: string
@@ -32,7 +53,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_expired_guests: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      create_guest_user: {
+        Args: { user_email: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
