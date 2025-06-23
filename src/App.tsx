@@ -15,6 +15,8 @@ import SettingsPage from "./pages/SettingsPage";
 import TermsOfServicePage from "./pages/TermsOfServicePage";
 import DMCAPage from "./pages/DMCAPage";
 import ContactPage from "./pages/ContactPage";
+import UserDashboard from "./pages/UserDashboard";
+import AdvancedSearchPage from "./pages/AdvancedSearchPage";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +31,8 @@ const App = () => (
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/browse/:letter" element={<Browse />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/dashboard" element={<UserDashboard />} />
+          <Route path="/search" element={<AdvancedSearchPage />} />
           <Route path="/gifs" element={<GifsPage />} />
           <Route path="/danbooru" element={<DanbooruPage />} />
           <Route path="/settings" element={<SettingsPage />} />
