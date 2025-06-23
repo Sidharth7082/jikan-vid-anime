@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,19 @@ interface AnimeDetailModalProps {
 }
 
 export const AnimeDetailModal = ({ anime, open, onOpenChange }: AnimeDetailModalProps) => {
+  // Return early if no anime data
+  if (!anime) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-center p-8">
+            <p className="text-gray-500">Loading anime details...</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   const genres = anime.genres?.map((genre: any) => genre.name).join(', ') || 'N/A';
 
   return (
