@@ -31,7 +31,10 @@ export const useFavorites = () => {
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
-      setFavorites(data || []);
+      setFavorites((data || []).map(item => ({
+        ...item,
+        list_type: item.list_type as ListType
+      })));
     } catch (error) {
       console.error('Error fetching favorites:', error);
       toast({
@@ -46,9 +49,13 @@ export const useFavorites = () => {
 
   const addToFavorites = async (anime: any, listType: ListType) => {
     try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) throw new Error('User not authenticated');
+
       const { error } = await supabase
         .from('user_favorites')
         .upsert({
+          user_id: user.id,
           anime_id: anime.mal_id,
           anime_title: anime.title || anime.title_english || anime.title_romaji,
           anime_image_url: anime.images?.jpg?.image_url || anime.image_url,

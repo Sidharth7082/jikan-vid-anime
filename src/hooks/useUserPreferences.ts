@@ -35,7 +35,15 @@ export const useUserPreferences = () => {
         .single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      setPreferences(data);
+      
+      if (data) {
+        setPreferences({
+          ...data,
+          theme: data.theme as Theme,
+          notification_settings: data.notification_settings as { email: boolean; push: boolean },
+          privacy_settings: data.privacy_settings as { profile_public: boolean; favorites_public: boolean }
+        });
+      }
     } catch (error) {
       console.error('Error fetching preferences:', error);
     } finally {
@@ -45,9 +53,13 @@ export const useUserPreferences = () => {
 
   const updatePreferences = async (updates: Partial<UserPreferences>) => {
     try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) throw new Error('User not authenticated');
+
       const { data, error } = await supabase
         .from('user_preferences')
         .upsert({
+          user_id: user.id,
           ...updates,
           updated_at: new Date().toISOString(),
         })
@@ -56,7 +68,15 @@ export const useUserPreferences = () => {
 
       if (error) throw error;
       
-      setPreferences(data);
+      if (data) {
+        setPreferences({
+          ...data,
+          theme: data.theme as Theme,
+          notification_settings: data.notification_settings as { email: boolean; push: boolean },
+          privacy_settings: data.privacy_settings as { profile_public: boolean; favorites_public: boolean }
+        });
+      }
+      
       toast({
         title: "Preferences updated",
         description: "Your preferences have been saved successfully",

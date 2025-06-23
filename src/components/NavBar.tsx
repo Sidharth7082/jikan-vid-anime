@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
@@ -70,7 +71,7 @@ const NavBar = ({
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <AnimeSearchBar onSearch={onSearch} />
+            <AnimeSearchBar onSelect={onSearch} />
             <ThemeToggle />
             {session ? <DropdownMenu>
                 <DropdownMenuTrigger asChild>
