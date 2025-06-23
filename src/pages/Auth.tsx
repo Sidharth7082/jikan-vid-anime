@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +9,7 @@ import { SignInForm } from "@/components/auth/SignInForm";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
 import { UpdatePasswordForm } from "@/components/auth/UpdatePasswordForm";
+import { X } from "lucide-react";
 
 const AuthPage = () => {
   const [loading, setLoading] = useState(false);
@@ -82,10 +82,22 @@ const AuthPage = () => {
     setGuestLoading(false);
   };
 
+  const handleClose = () => {
+    navigate("/");
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#e0e0ff]/60 via-[#f8f4fa]/60 to-[#faf6fb]/90 p-4">
       {showUpdatePassword ? <UpdatePasswordForm setShowUpdatePassword={setShowUpdatePassword} /> : (
-        <Card className="w-full max-w-md shadow-2xl border-purple-100">
+        <Card className="w-full max-w-md shadow-2xl border-purple-100 relative">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-2 top-2 h-8 w-8 rounded-full hover:bg-purple-100 z-10"
+            onClick={handleClose}
+          >
+            <X className="h-4 w-4" />
+          </Button>
           <CardHeader className="text-center">
             <CardTitle className="text-3xl font-bold text-purple-700 tracking-tight">
               captureordie
